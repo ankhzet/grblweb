@@ -40,7 +40,7 @@ const webcamURL = `${config.host === 'localhost' ? '127.0.0.1' : config.host}:${
 
 get(webcamURL, () => {
     // valid response, enable webcam
-    console.log('enabling webcam');
+    console.log(`[${'Webcam'.blue}]: enabled webcam support`);
     config.showWebCam = true;
 }).on('socket', (socket) => {
     // 2 second timeout on this socket
@@ -48,12 +48,17 @@ get(webcamURL, () => {
     socket.on('timeout', function () {
         this.abort();
     });
-}).on('error', (e) => {
-    console.log('Got error: ' + e.message + ' not enabling webcam');
+}).on('error', function (e) {
+    const error = e.message.includes('ECONNREFUSED') ? `no webcam stream at URL ${webcamURL}` : e.message;
+    console.log(`[${'Webcam'.blue}]: ${error.red}`);
 });
 
+const url = config.webPort === 80
+    ? config.host
+    : `${config.host}:${config.webPort}`;
 
-console.log('http server listening on port ' + config.webPort);
+console.log(`[${'Server'.blue}]: listening on port ${config.webPort.toString().green} (${url.green})`);
+
 const httpServer = createServer(handler).listen(config.webPort);
 const io = new SocketServer(httpServer, { /* options */ });
 const fileServer = new StaticServer('./i');
@@ -64,8 +69,9 @@ function handler(req, res) {
 
     if (req.url.indexOf('/api/uploadGcode') == 0 && req.method == 'POST') {
         // this is a gcode upload, probably from jscut
-        console.log('new data from jscut');
-        var b = '';
+        console.log(`[${'jscut'.blue}]: new data`);
+
+        let b = '';
         req.on('data', function (data) {
             b += data;
             if (b.length > 1e6) {
@@ -80,8 +86,10 @@ function handler(req, res) {
             res.end(JSON.stringify({ 'data': 'ok' }));
         });
     } else {
-        fileServer.serve(req, res, function (err, result) {
-            if (err) console.log('fileServer error: ', err);
+        fileServer.serve(req, res, function (err, _result) {
+            if (err) {
+                console.log(`[${'fileServer'.blue}]: ${String(err.message || err).red} (${req.url})`);
+            }
         });
     }
 }
@@ -244,6 +252,7 @@ function sendFirstQ(port) {
 
     if (sp[port].q.length < 1) {
         // nothing to send
+        console.log(`[${'GCODE'.blue}]: done`);
         return;
     }
     var t = sp[port].q.shift();
@@ -344,9 +353,11 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('usePort', function (data) {
+        const id = socket.id;
+        const port = sp[data];
+        const current = currentSocketPort[id];
+        console.log(`[${'Serial'.blue}]: user wants to use port ${String(data).yellow}`);
 
-        console.log('user wants to use port ' + data);
-        console.log('switching from ' + currentSocketPort[socket.id]);
 
         if (typeof currentSocketPort[socket.id] != 'undefined') {
             for (var c = 0; c < sp[currentSocketPort[socket.id]].sockets.length; c++) {
@@ -355,6 +366,7 @@ io.sockets.on('connection', function (socket) {
                     sp[currentSocketPort[socket.id]].sockets.splice(c, 1);
                 }
             }
+            console.log(`[${'Serial'.blue}]: switching from ${String(current).yellow}`);
         }
 
         if (typeof sp[data] != 'undefined') {
