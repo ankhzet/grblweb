@@ -26,7 +26,10 @@
  */
 
 import qs from 'querystring';
+import SerialPort from 'serialport';
 import { createServer, get } from 'http';
+import { Server as StaticServer } from 'node-static';
+import { Server as SocketServer } from 'socket.io';
 
 import config from './config.mjs';
 
@@ -49,10 +52,11 @@ get(webcamURL, () => {
     console.log('Got error: ' + e.message + ' not enabling webcam');
 });
 
-var io = new socketio.Server(httpServer, { /* options */ });
-var fileServer = new static.Server('./i');
 
 console.log('http server listening on port ' + config.webPort);
+const httpServer = createServer(handler).listen(config.webPort);
+const io = new SocketServer(httpServer, { /* options */ });
+const fileServer = new StaticServer('./i');
 
 function handler(req, res) {
 
