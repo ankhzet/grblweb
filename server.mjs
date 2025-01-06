@@ -25,7 +25,7 @@
 
 */
 
-var config = require('./config');
+var config = require('./config.mjs');
 var serialport = require("serialport");
 var socketio = require('socket.io');
 var fs = require('fs');
