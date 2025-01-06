@@ -68,7 +68,7 @@ function handler(req, res) {
 
     //console.log(req.url);
 
-    if (req.url.indexOf('/api/uploadGcode') == 0 && req.method == 'POST') {
+    if (req.url.indexOf('/api/uploadGcode') === 0 && req.method === 'POST') {
         // this is a gcode upload, probably from jscut
         console.log(`[${'jscut'.blue}]: new data`);
 
@@ -79,8 +79,9 @@ function handler(req, res) {
                 req.connection.destroy();
             }
         });
+
         req.on('end', function () {
-            var post = qs.parse(b);
+            const post = qs.parse(b);
             //console.log(post);
             io.sockets.emit('gcodeFromJscut', { 'val': post.val });
             res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -95,19 +96,13 @@ function handler(req, res) {
     }
 }
 
-function ConvChar(str) {
-    c = {
-        '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', '\'': '&#039;',
-        '#': '&#035;'
-    };
-    return str.replace(/[<&>'"#]/g, function (s) {
-        return c[s];
-    });
-    const url = config.webPort === 80
-        ? config.host
-        : `${config.host}:${config.webPort}`;
+const ESCAPE_MAP = {
+    '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', '\'': '&#039;',
+    '#': '&#035;'
+};
 
-    const httpServer = createServer(handler).listen(config.webPort);
+function ConvChar(str) {
+    return str.replace(/[<&>'"#]/g, (s) => ESCAPE_MAP[s]);
 }
 
 const ports = await SerialPort.list();
@@ -164,58 +159,59 @@ function makePort(index, descriptor) {
 }
 
 function emitToPortSockets(port, evt, obj) {
-    for (var i = 0; i < sp[port].sockets.length; i++) {
-        sp[port].sockets[i].emit(evt, obj);
+    for (const socket of sp[port].sockets) {
+        socket.emit(evt, obj);
     }
 }
 
-function serialData(data, port) {
-
+/**
+ * @param {string} data
+ * @param {number} index
+ */
+function serialData(data, index) {
     // handle ?
-    if (data.indexOf('<') == 0) {
+    if (data.indexOf('<') === 0) {
         // https://github.com/grbl/grbl/wiki/Configuring-Grbl-v0.8#---current-status
 
-        // remove first <
-        var t = data.substr(1);
-
-        // remove last >
-        t = t.substr(0, t.length - 2);
-
-        // split on , and :
-        t = t.split(/,|:/);
+        // remove <> and split on , and :
+        const [t0, _, t2, t3, t4, __, t6, t7, t8] = data.slice(1, data.length - 2).split(/[,:]/);
 
         emitToPortSockets(
-            port,
+            index,
             'machineStatus',
-            { 'status': t[0], 'mpos': [t[2], t[3], t[4]], 'wpos': [t[6], t[7], t[8]] }
+            { 'status': t0, 'mpos': [t2, t3, t4], 'wpos': [t6, t7, t8] }
         );
 
         return;
     }
 
-    if (queuePause == 1) {
+    if (queuePause === 1) {
         // pause queue
         return;
     }
 
     data = ConvChar(data);
 
-    if (data.indexOf('ok') == 0) {
+    const port = sp[index];
 
+    if (data.startsWith('ok')) {
         // ok is green
-        emitToPortSockets(port, 'consoleDisplay', { 'line': '<span style="color: green;">RESP: ' + data + '</span>' });
+        emitToPortSockets(
+            index,
+            'consoleDisplay',
+            { 'line': '<span style="color: green;">RESP: ' + data + '</span>' }
+        );
 
         // run another line from the q
-        if (sp[port].q.length > 0) {
+        if (port.q.length > 0) {
             // there are remaining lines in the q
             // write one
-            sendFirstQ(port);
+            sendGCodeLine(index);
         }
 
         // remove first
-        sp[port].lastSerialWrite.shift();
-
-    } else if (data.indexOf('error') == 0) {
+        port.lastSerialWrite.shift();
+    } else if (data.startsWith('error')) {
 
         // error is red
         const match = data.match(/^error\D*(?<code>\d+)/i);
@@ -231,107 +227,115 @@ function serialData(data, port) {
         emitToPortSockets(index, 'consoleDisplay', { line });
 
         // run another line from the q
-        if (sp[port].q.length > 0) {
+        if (port.q.length > 0) {
             // there are remaining lines in the q
             // write one
-            sendFirstQ(port);
+            sendGCodeLine(index);
         }
 
         // remove first
-        sp[port].lastSerialWrite.shift();
+        port.lastSerialWrite.shift();
 
     } else {
         // other is grey
-        emitToPortSockets(port, 'consoleDisplay', { 'line': '<span style="color: #888;">RESP: ' + data + '</span>' });
+        emitToPortSockets(
+            index,
+            'consoleDisplay',
+            { 'line': '<span style="color: #888;">RESP: ' + data + '</span>' }
+        );
     }
 
-    if (sp[port].q.length == 0) {
+    if (port.q.length === 0) {
         // reset max once queue is done
-        sp[port].qCurrentMax = 0;
+        port.qCurrentMax = 0;
     }
 
     // update q status
-    emitToPortSockets(port, 'qStatus', { 'currentLength': sp[port].q.length, 'currentMax': sp[port].qCurrentMax });
+    emitToPortSockets(index, 'qStatus', { 'currentLength': port.q.length, 'currentMax': port.qCurrentMax });
 
-    sp[port].lastSerialReadLine = data;
-
+    port.lastSerialReadLine = data;
 }
 
-var currentSocketPort = {};
+function escape(text) {
+    return text.replaceAll('"', '\\"');
+}
 
-function sendFirstQ(port) {
+function sendGCodeLine(index) {
+    const port = sp[index];
 
-    if (sp[port].q.length < 1) {
+    if (port.q.length < 1) {
         // nothing to send
         console.log(`[${'GCODE'.blue}]: done`);
         return;
     }
-    var t = sp[port].q.shift();
 
-    // remove any comments after the command
-    tt = t.split(';');
-    t = tt[0];
-    // trim it because we create the \n
-    t = t.trim();
-    if (t == '' || t.indexOf(';') == 0) {
+    // remove any comments after the command and trim it because we create the \n
+    const t = port.q.shift().split(';', 1)[0].trim();
+
+    if (!t || t.startsWith(';')) {
         // this is a comment or blank line, go to next
-        sendFirstQ(port);
+        sendGCodeLine(index);
         return;
     }
+
     //console.log('sending '+t+' ### '+sp[port].q.length+' current q length');
 
     // loop through all registered port clients
-    for (var i = 0; i < sp[port].sockets.length; i++) {
-        sp[port].sockets[i].emit(
-            'consoleDisplay',
-            { 'line': '<span style="color: black;">SEND: ' + t + '</span>' + '\n' }
-        );
-    }
-    sp[port].port.write(t + '\n');
-    sp[port].lastSerialWrite.push(t);
+    emitToPortSockets(
+        index,
+        'consoleDisplay',
+        {
+            'line': `<span style="color: black;">SEND: <span style="cursor: pointer" onclick="sendCommand('${escape(
+                t)}')">${t} &rarr;</span></span>\n`
+        },
+    );
+
+    console.log(`[${'GCODE'.blue}]: ${t}`);
+    port.port.write(t + '\n');
+    port.lastSerialWrite.push(t);
 }
 
-var queuePause = 0;
 io.sockets.on('connection', function (socket) {
-
-    socket.emit('ports', allPorts);
+    socket.emit('ports', allPorts.map((port, idx) => ({ ...port, idx })));
     socket.emit('config', config);
 
     // do soft reset, this has it's own clear and direct function call
-    socket.on('doReset', function (data) {
+    socket.on('doReset', function (_data) {
+        const port = sp[currentSocketPort[socket.id]];
         // soft reset for grbl, send ctrl-x ascii \030
-        sp[currentSocketPort[socket.id]].port.write('\030');
+        port.port.write('\x18');
         // reset vars
-        sp[currentSocketPort[socket.id]].q = [];
-        sp[currentSocketPort[socket.id]].qCurrentMax = 0;
-        sp[currentSocketPort[socket.id]].lastSerialWrite = [];
-        sp[currentSocketPort[socket.id]].lastSerialRealLine = '';
+        port.q = [];
+        port.qCurrentMax = 0;
+        port.lastSerialWrite = [];
+        port.lastSerialRealLine = '';
     });
 
     // lines from web ui
-    socket.on('gcodeLine', function (data) {
+    socket.on('gcodeLine', function ({ line }) {
+        const current = currentSocketPort[socket.id];
 
-        if (typeof currentSocketPort[socket.id] != 'undefined') {
+        if (current) {
+            const port = sp[current];
 
             // valid serial port selected, safe to send
             // split newlines
-            var nl = data.line.split('\n');
+            const nl = line.split('\n');
             // add to queue
-            sp[currentSocketPort[socket.id]].q = sp[currentSocketPort[socket.id]].q.concat(nl);
+            port.q = port.q.concat(nl);
             // add to qCurrentMax
-            sp[currentSocketPort[socket.id]].qCurrentMax += nl.length;
-            if (sp[currentSocketPort[socket.id]].q.length == nl.length) {
-                // there was no previous q so write a line
-                sendFirstQ(currentSocketPort[socket.id]);
-            }
+            port.qCurrentMax += nl.length;
 
+            if (port.q.length === nl.length) {
+                // there was no previous q so write a line
+                sendGCodeLine(current);
+            }
         } else {
             socket.emit('serverError', 'you must select a serial port');
         }
-
     });
 
-    socket.on('clearQ', function (data) {
+    socket.on('clearQ', function (_data) {
         // clear the command queue
         sp[currentSocketPort[socket.id]].q = [];
         // update the status
@@ -340,28 +344,17 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('pause', function (data) {
         // pause queue
-        if (data == 1) {
+        if (data === 1) {
             console.log('pausing queue');
             queuePause = 1;
         } else {
             console.log('unpausing queue');
             queuePause = 0;
-            sendFirstQ(currentSocketPort[socket.id]);
+            sendGCodeLine(currentSocketPort[socket.id]);
         }
     });
 
-    socket.on('disconnect', function () {
-
-        if (typeof currentSocketPort[socket.id] != 'undefined') {
-            for (var c = 0; c < sp[currentSocketPort[socket.id]].sockets.length; c++) {
-                if (sp[currentSocketPort[socket.id]].sockets[c].id == socket.id) {
-                    // remove old
-                    sp[currentSocketPort[socket.id]].sockets.splice(c, 1);
-                }
-            }
-        }
-
-    });
+    socket.on('disconnect', () => dropSocket(socket.id));
 
     socket.on('usePort', function (data) {
         const id = socket.id;
@@ -369,24 +362,30 @@ io.sockets.on('connection', function (socket) {
         const current = currentSocketPort[id];
         console.log(`[${'Serial'.blue}]: user wants to use port ${String(data).yellow}`);
 
-
-        if (typeof currentSocketPort[socket.id] != 'undefined') {
-            for (var c = 0; c < sp[currentSocketPort[socket.id]].sockets.length; c++) {
-                if (sp[currentSocketPort[socket.id]].sockets[c].id == socket.id) {
-                    // remove old
-                    sp[currentSocketPort[socket.id]].sockets.splice(c, 1);
-                }
-            }
+        if (current) {
             console.log(`[${'Serial'.blue}]: switching from ${String(current).yellow}`);
         }
 
-        if (typeof sp[data] != 'undefined') {
-            currentSocketPort[socket.id] = data;
-            sp[data].sockets.push(socket);
+        dropSocket(id);
+
+        if (port) {
+            currentSocketPort[id] = data;
+            port.sockets.push(socket);
         } else {
             socket.emit('serverError', 'that serial port does not exist');
         }
-
     });
-
 });
+
+function dropSocket(id) {
+    const current = currentSocketPort[id];
+
+    if (current) {
+        const sockets = sp[current].sockets;
+        const idx = sockets.findIndex((item) => item.id === id);
+
+        if (idx >= 0) {
+            sockets.splice(idx, 1);
+        }
+    }
+}
