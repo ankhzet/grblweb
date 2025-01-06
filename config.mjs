@@ -68,4 +68,5 @@ export default {
     webcamPort: 8080,
     serialBaudRate: 115200,
     usettyAMA0: 1,
+    portsFilter: parsed.PORTS_FILTER || '',
 };

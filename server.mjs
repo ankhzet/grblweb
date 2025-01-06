@@ -110,58 +110,58 @@ function ConvChar(str) {
     const httpServer = createServer(handler).listen(config.webPort);
 }
 
-var sp = [];
-var allPorts = [];
+const ports = await SerialPort.list();
+//console.log(ports);
 
-serialport.list().then(function (ports) {
+const filtersRegexp = config.portsFilter?.trim();
+const filter = filtersRegexp && new RegExp(filtersRegexp, 'iu');
 
-    // if on rPi - http://www.hobbytronics.co.uk/raspberry-pi-serial-port
+const allPorts = filter ? ports.filter(({ path }) => !filter.test(path)) : ports;
 
-    allPorts = ports;
+const currentSocketPort = {};
+let queuePause = 0;
 
-    //console.log(ports);
+if (filter && allPorts.length !== ports.length) {
+    console.log(`[${'Serial'.blue}]: ignoring ports matching pattern: /${filtersRegexp.yellow}/iu`);
+}
 
-    for (var i = 0; i < ports.length; i++) {
-        !function outer(i) {
+const sp = allPorts.map((descriptor, index) => makePort(index, descriptor));
 
-            sp[i] = {};
-            sp[i].port = ports[i].path;
-            sp[i].q = [];
-            sp[i].qCurrentMax = 0;
-            sp[i].lastSerialWrite = [];
-            sp[i].lastSerialReadLine = '';
-            // read on the parser
-            sp[i].handle = new serialport.parsers.Readline({ delimiter: '\r\n' });
-            // 1 means clear to send, 0 means waiting for response
-            sp[i].port = new serialport(ports[i].path, {
-                baudRate: config.serialBaudRate
-            });
-            // write on the port
-            sp[i].port.pipe(sp[i].handle);
-            sp[i].sockets = [];
+function makePort(index, descriptor) {
+    const serial = { ...descriptor };
+    serial.idx = index;
+    serial.q = [];
+    serial.qCurrentMax = 0;
+    serial.lastSerialWrite = [];
+    serial.lastSerialReadLine = '';
+    // read on the parser
+    serial.handle = new SerialPort.parsers.Readline({ delimiter: '\r\n' });
+    // 1 means clear to send, 0 means waiting for response
+    serial.port = new SerialPort(serial.path, {
+        baudRate: config.serialBaudRate
+    });
+    // write on the port
+    serial.port.pipe(serial.handle);
+    serial.sockets = [];
 
-            sp[i].port.on('open', function () {
+    serial.port.on('open', () => {
+        console.log(`[${'Server'.blue}]: connected at ${serial.path.green} (${config.serialBaudRate.toString().green} baud)`);
 
-                console.log('connected at ' + config.serialBaudRate, sp[i].port.path);
+        // loop for status ?
+        setInterval(() => {
+            //console.log('writing ? to serial');
+            serial.port.write('?');
+        }, 1000);
+    });
 
-                // loop for status ?
-                setInterval(function () {
-                    //console.log('writing ? to serial');
-                    sp[i].port.write('?');
-                }, 1000);
+    // line from serial port
+    serial.handle.on('data', (data) => {
+        //console.log('got data', data);
+        serialData(data, serial.idx);
+    });
 
-            });
-
-            // line from serial port
-            sp[i].handle.on('data', function (data) {
-                //console.log('got data', data);
-                serialData(data, i);
-            });
-
-        }(i);
-    }
-
-});
+    return serial;
+}
 
 function emitToPortSockets(port, evt, obj) {
     for (var i = 0; i < sp[port].sockets.length; i++) {
