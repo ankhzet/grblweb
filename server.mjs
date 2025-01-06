@@ -32,6 +32,7 @@ import { Server as StaticServer } from 'node-static';
 import { Server as SocketServer } from 'socket.io';
 
 import config from './config.mjs';
+import { getError } from './errors.mjs';
 
 // test for webcam
 config.showWebCam = false;
@@ -217,7 +218,17 @@ function serialData(data, port) {
     } else if (data.indexOf('error') == 0) {
 
         // error is red
-        emitToPortSockets(port, 'consoleDisplay', { 'line': '<span style="color: red;">RESP: ' + data + '</span>' });
+        const match = data.match(/^error\D*(?<code>\d+)/i);
+        const errno = Number.isFinite(+match?.groups?.code) ? +match.groups.code : 0;
+        const { code, name, help } = getError(errno);
+        const line = code
+            ? `<span style="color: red;" title="${help.replaceAll(
+                '"',
+                '&quot;'
+            )}">RESP: ${name}<sup style="color: blue">i</sup></span>`
+            : '<span style="color: red;">RESP: ' + data + '</span>';
+
+        emitToPortSockets(index, 'consoleDisplay', { line });
 
         // run another line from the q
         if (sp[port].q.length > 0) {
