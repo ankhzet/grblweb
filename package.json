@@ -2,12 +2,19 @@
   "name": "grblweb",
   "description": "web based gcode sender for grbl",
   "type": "module",
+  "scripts": {
+    "start": "node ./server.mjs",
+    "debug": "nodemon --inspect ./server.mjs"
+  },
   "dependencies": {
     "node-static": "0.7.x",
     "serialport": "^9.0.6",
     "socket.io": "4.5.2",
     "dotenv": "^16.4.7",
     "chalk": "^5.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   },
   "engines": {
     "node": ">=22"
