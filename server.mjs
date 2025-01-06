@@ -25,16 +25,13 @@
 
 */
 
-var config = require('./config.mjs');
-var serialport = require("serialport");
-var socketio = require('socket.io');
-var fs = require('fs');
-var http = require('http');
-var static = require('node-static');
-var EventEmitter = require('events').EventEmitter;
-var url = require('url');
-var qs = require('querystring');
-var http = require('http');
+import qs from 'querystring';
+import SerialPort from 'serialport';
+import { createServer, get } from 'http';
+import { Server as StaticServer } from 'node-static';
+import { Server as SocketServer } from 'socket.io';
+
+import config from './config.mjs';
 
 // test for webcam
 config.showWebCam = false;

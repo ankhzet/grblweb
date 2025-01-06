@@ -1,6 +1,7 @@
 {
   "name": "grblweb",
   "description": "web based gcode sender for grbl",
+  "type": "module",
   "dependencies": {
     "node-static": "0.7.x",
     "serialport": "^9.0.6",
