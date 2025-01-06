@@ -36,21 +36,22 @@ import config from './config.mjs';
 // test for webcam
 config.showWebCam = false;
 
-http.get('http://127.0.0.1:8080', function(res) {
+const webcamURL = `${config.host === 'localhost' ? '127.0.0.1' : config.host}:${config.webcamPort}`;
+
+get(webcamURL, () => {
 	// valid response, enable webcam
 	console.log('enabling webcam');
 	config.showWebCam = true;
-}).on('socket', function(socket) {
+}).on('socket', (socket) => {
 	// 2 second timeout on this socket
 	socket.setTimeout(2000);
 	socket.on('timeout', function() {
 		this.abort();
 	});
-}).on('error', function(e) {
+}).on('error', (e) => {
 	console.log('Got error: '+e.message+' not enabling webcam')
 });
 
-var httpServer = http.createServer(handler).listen(config.webPort);
 var io = new socketio.Server(httpServer, { /* options */ });
 var fileServer = new static.Server('./i');
 
@@ -88,6 +89,11 @@ function ConvChar( str ) {
   c = {'<':'&lt;', '>':'&gt;', '&':'&amp;', '"':'&quot;', "'":'&#039;',
        '#':'&#035;' };
   return str.replace( /[<&>'"#]/g, function(s) { return c[s]; } );
+const url = config.webPort === 80
+    ? config.host
+    : `${config.host}:${config.webPort}`;
+
+const httpServer = createServer(handler).listen(config.webPort);
 }
 
 var sp = [];
