@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.svg = jscut.svg || {};
 
 (function () {
@@ -31,20 +31,20 @@ jscut.svg = jscut.svg || {};
     // closePaths is true. closePaths defaults to true; set it to false it you're
     // converting CAM paths.
     jscut.svg.addGeometryToSvg = function (svg, geometry, pxPerInch, attributes, closePaths) {
-        var path = jscut.geometry.toSvgPathObject(geometry, pxPerInch, attributes, closePaths);
+        let path = jscut.geometry.toSvgPathObject(geometry, pxPerInch, attributes, closePaths);
         svg.appendChild(path);
-        var bbox = svg.getBBox();
+        let bbox = svg.getBBox();
         svg.setAttribute("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
     }
 
     // Add cam paths to an SVG object. Updates SVG's viewBow.
     jscut.svg.addCamPathsToSvg = function (svg, camPaths, pxPerInch, attributes) {
-        var geometry = [];
-        for (var i = 0; i < camPaths.length; ++i)
+        let geometry = [];
+        for (let i = 0; i < camPaths.length; ++i)
             geometry.push(camPaths[i].path);
-        var path = jscut.geometry.toSvgPathObject(geometry, pxPerInch, attributes, false);
+        let path = jscut.geometry.toSvgPathObject(geometry, pxPerInch, attributes, false);
         svg.appendChild(path);
-        var bbox = svg.getBBox();
+        let bbox = svg.getBBox();
         svg.setAttribute("viewBox", bbox.x + " " + bbox.y + " " + bbox.width + " " + bbox.height);
     }
 })();

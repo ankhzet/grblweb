@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.geometry = jscut.geometry || {};
 
 (function () {
@@ -40,7 +40,7 @@ jscut.geometry = jscut.geometry || {};
 
     // Create a rectangle.
     jscut.geometry.createRect = function (x1, y1, x2, y2, units) {
-        var conv = jscut.geometry.getConversion(units);
+        let conv = jscut.geometry.getConversion(units);
         if (isNaN(conv))
             return [];
         return [[
@@ -52,14 +52,14 @@ jscut.geometry = jscut.geometry || {};
 
     // Create a circle.
     jscut.geometry.createCircle = function (x, y, r, numSegments, units) {
-        var conv = jscut.geometry.getConversion(units);
+        let conv = jscut.geometry.getConversion(units);
         if (isNaN(conv) || numSegments < 3)
             return [];
         x *= conv;
         y *= conv;
         r *= conv;
-        var result = [];
-        for (var i = 0; i < numSegments; ++i)
+        let result = [];
+        for (let i = 0; i < numSegments; ++i)
             result.push({
                 X: x + r * Math.cos(2 * Math.PI * i / numSegments),
                 Y: y + r * Math.sin(2 * Math.PI * i / numSegments)
@@ -69,12 +69,12 @@ jscut.geometry = jscut.geometry || {};
 
     // Transform geometry. Returns new geometry.
     jscut.geometry.transform = function (matrix, geometry) {
-        var result = [];
-        for (var i = 0; i < geometry.length; ++i) {
-            var subGeom = geometry[i];
-            var newSubGeom = [];
-            for (var j = 0; j < subGeom.length; ++j) {
-                var point = subGeom[j];
+        let result = [];
+        for (let i = 0; i < geometry.length; ++i) {
+            let subGeom = geometry[i];
+            let newSubGeom = [];
+            for (let j = 0; j < subGeom.length; ++j) {
+                let point = subGeom[j];
                 newSubGeom.push({
                     X: matrix[0][0] * point.X + matrix[0][1] * point.Y + matrix[0][2],
                     Y: matrix[1][0] * point.X + matrix[1][1] * point.Y + matrix[1][2]
@@ -87,10 +87,10 @@ jscut.geometry = jscut.geometry || {};
 
     // Translate geometry. Returns new geometry.
     jscut.geometry.translate = function (geometry, dx, dy, units) {
-        var conv = jscut.geometry.getConversion(units);
+        let conv = jscut.geometry.getConversion(units);
         if (isNaN(conv))
             return [];
-        var matrix = [
+        let matrix = [
             [1, 0, dx * conv],
             [0, 1, dy * conv]];
         return jscut.geometry.transform(matrix, geometry);
@@ -98,7 +98,7 @@ jscut.geometry = jscut.geometry || {};
 
     // Scale geometry. Returns new geometry.
     jscut.geometry.scale = function (geometry, scaleX, scaleY) {
-        var matrix = [
+        let matrix = [
             [scaleX, 0, 0],
             [0, scaleY, 0]];
         return jscut.geometry.transform(matrix, geometry);
@@ -106,7 +106,7 @@ jscut.geometry = jscut.geometry || {};
 
     // Rotate geometry. units is "deg" or "rad". Returns new geometry.
     jscut.geometry.rotate = function (geometry, angle, units) {
-        var convertedAngle;
+        let convertedAngle;
         if (units == "deg")
             convertedAngle = angle * Math.PI / 180;
         else if (units == "rad")
@@ -115,7 +115,7 @@ jscut.geometry = jscut.geometry || {};
             console.log("jscut.geometry.rotate: units must be 'deg' or 'rad'");
             return [];
         }
-        var matrix = [
+        let matrix = [
             [Math.cos(convertedAngle), -Math.sin(convertedAngle), 0],
             [Math.sin(convertedAngle), Math.cos(convertedAngle), 0]];
         return jscut.geometry.transform(matrix, geometry);
@@ -124,7 +124,7 @@ jscut.geometry = jscut.geometry || {};
     // Grow geometry by distance. Negative distance shrinks.
     // join is "square", "round", or "miter". Returns new geometry.
     jscut.geometry.grow = function (geometry, distance, units, join) {
-        var conv = jscut.geometry.getConversion(units);
+        let conv = jscut.geometry.getConversion(units);
         if(join=='square')
             join = ClipperLib.JoinType.jtSquare;
         else if(join=='round')
@@ -166,12 +166,12 @@ jscut.geometry = jscut.geometry || {};
     jscut.geometry.toSvgPathData = function (geometry, pxPerInch, closePaths) {
         if (typeof closePaths == 'undefined')
             closePaths = true;
-        var scale = pxPerInch / jscut.priv.path.inchToClipperScale;
-        var result = "";
-        for (var i = 0; i < geometry.length; ++i) {
-            var subGeom = geometry[i];
-            for (var j = 0; j < subGeom.length; ++j) {
-                var point = subGeom[j];
+        let scale = pxPerInch / jscut.priv.path.inchToClipperScale;
+        let result = "";
+        for (let i = 0; i < geometry.length; ++i) {
+            let subGeom = geometry[i];
+            for (let j = 0; j < subGeom.length; ++j) {
+                let point = subGeom[j];
                 if (j == 0)
                     result += "M ";
                 else
@@ -188,9 +188,9 @@ jscut.geometry = jscut.geometry || {};
     // closePaths is true. closePaths defaults to true; set it to false it you're
     // converting CAM paths.
     jscut.geometry.toSvgPathObject = function (geometry, pxPerInch, attributes, closePaths) {
-        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute('d', jscut.geometry.toSvgPathData(geometry, pxPerInch, closePaths));
-        for (var k in attributes)
+        for (let k in attributes)
             path.setAttribute(k, attributes[k]);
         return path;
     }

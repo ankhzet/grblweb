@@ -17,7 +17,7 @@
 
 function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPathsChanged, loading) {
     "use strict";
-    var self = this;
+    let self = this;
     self.rawPaths = rawPaths;
     self.enabled = ko.observable(true);
     self.margin = ko.observable("0.0");
@@ -35,7 +35,7 @@ function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPath
     }
 
     self.enabled.subscribe(function (newValue) {
-        var v;
+        let v;
         if (newValue)
             v = "visible";
         else
@@ -48,19 +48,19 @@ function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPath
         if (loading)
             return;
 
-        var startTime = Date.now();
+        let startTime = Date.now();
         if (options.profile)
             console.log("tabs recombine...");
 
         self.removeCombinedGeometrySvg();
 
-        var all = [];
-        for (var i = 0; i < self.rawPaths.length; ++i) {
-            var geometry = jscut.priv.path.getClipperPathsFromSnapPath(self.rawPaths[i].path, svgViewModel.pxPerInch(), function (msg) {
+        let all = [];
+        for (let i = 0; i < self.rawPaths.length; ++i) {
+            let geometry = jscut.priv.path.getClipperPathsFromSnapPath(self.rawPaths[i].path, svgViewModel.pxPerInch(), function (msg) {
                 showAlert(msg, "alert-warning");
             });
             if (geometry != null) {
-                var fillRule;
+                let fillRule;
                 if (self.rawPaths[i].nonzero)
                     fillRule = ClipperLib.PolyFillType.pftNonZero;
                 else
@@ -73,16 +73,16 @@ function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPath
             self.combinedGeometry = [];
         else {
             self.combinedGeometry = all[0];
-            for (var i = 1; i < all.length; ++i)
+            for (let i = 1; i < all.length; ++i)
                 self.combinedGeometry = jscut.priv.path.clip(self.combinedGeometry, all[i], ClipperLib.ClipType.ctUnion);
         }
 
-        var offset = self.margin.toInch() * jscut.priv.path.inchToClipperScale;
+        let offset = self.margin.toInch() * jscut.priv.path.inchToClipperScale;
         if (offset != 0)
             self.combinedGeometry = jscut.priv.path.offset(self.combinedGeometry, offset);
 
         if (self.combinedGeometry.length != 0) {
-            var path = jscut.priv.path.getSnapPathFromClipperPaths(self.combinedGeometry, svgViewModel.pxPerInch());
+            let path = jscut.priv.path.getSnapPathFromClipperPaths(self.combinedGeometry, svgViewModel.pxPerInch());
             if (path != null)
                 self.combinedGeometrySvg = tabsGroup.path(path).attr("class", "tabsGeometry");
         }
@@ -98,12 +98,11 @@ function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPath
     self.recombine();
 
     self.toJson = function () {
-        result = {
+        return {
             'rawPaths': self.rawPaths,
             'enabled': self.enabled(),
             'margin': self.margin(),
         };
-        return result;
     }
 
     self.fromJson = function (json) {
@@ -127,7 +126,7 @@ function Tab(options, svgViewModel, tabsViewModel, tabsGroup, rawPaths, toolPath
 
 function TabsViewModel(miscViewModel, options, svgViewModel, materialViewModel, selectionViewModel, tabsGroup, toolPathsChanged) {
     "use strict";
-    var self = this;
+    let self = this;
     self.miscViewModel = miscViewModel;
     self.svgViewModel = svgViewModel;
     self.tabs = ko.observableArray();
@@ -139,27 +138,27 @@ function TabsViewModel(miscViewModel, options, svgViewModel, materialViewModel, 
     self.maxCutDepth.subscribe(toolPathsChanged);
 
     self.units.subscribe(function (newValue) {
-        var tabs = self.tabs();
+        let tabs = self.tabs();
         if (newValue == "inch")
-            for (var i = 0; i < tabs.length ; ++i) {
-                var tab = tabs[i];
+            for (let i = 0; i < tabs.length ; ++i) {
+                let tab = tabs[i];
                 tab.margin(tab.margin() / 25.4);
             }
         else
-            for (var i = 0; i < tabs.length ; ++i) {
-                var tab = tabs[i];
+            for (let i = 0; i < tabs.length ; ++i) {
+                let tab = tabs[i];
                 tab.margin(tab.margin() * 25.4);
             }
     });
 
     svgViewModel.pxPerInch.subscribe(function () {
-        var tabs = self.tabs();
-        for (var i = 0; i < tabs.length; ++i)
+        let tabs = self.tabs();
+        for (let i = 0; i < tabs.length; ++i)
             tabs[i].recombine();
     });
 
     self.addTab = function () {
-        var rawPaths = [];
+        let rawPaths = [];
         selectionViewModel.getSelection().forEach(function (element) {
             rawPaths.push({
                 'path': Snap.parsePathString(element.attr('d')),
@@ -167,14 +166,14 @@ function TabsViewModel(miscViewModel, options, svgViewModel, materialViewModel, 
             });
         });
         selectionViewModel.clearSelection();
-        var tab = new Tab(options, svgViewModel, self, tabsGroup, rawPaths, toolPathsChanged, false);
+        let tab = new Tab(options, svgViewModel, self, tabsGroup, rawPaths, toolPathsChanged, false);
         self.tabs.push(tab);
         toolPathsChanged();
     }
 
     self.removeTab = function (tab) {
         tab.removeCombinedGeometrySvg();
-        var i = self.tabs.indexOf(tab);
+        let i = self.tabs.indexOf(tab);
         self.tabs.remove(tab);
         toolPathsChanged();
     }
@@ -186,9 +185,9 @@ function TabsViewModel(miscViewModel, options, svgViewModel, materialViewModel, 
     }
 
     self.toJson = function () {
-        var tabs = self.tabs();
-        var jsonTabs = [];
-        for (var i = 0; i < tabs.length; ++i)
+        let tabs = self.tabs();
+        let jsonTabs = [];
+        for (let i = 0; i < tabs.length; ++i)
             jsonTabs.push(tabs[i].toJson());
         return {
             'units': self.units(),
@@ -207,15 +206,15 @@ function TabsViewModel(miscViewModel, options, svgViewModel, materialViewModel, 
             f(json.units, self.units);
             f(json.maxCutDepth, self.maxCutDepth);
 
-            var oldTabs = self.tabs();
-            for (var i = 0; i < oldTabs.length; ++i) {
+            let oldTabs = self.tabs();
+            for (let i = 0; i < oldTabs.length; ++i) {
                 oldTabs[i].removeCombinedGeometrySvg();
             }
             self.tabs.removeAll();
 
             if ((typeof json.tabs !== "undefined")) {
-                for (var i = 0; i < json.tabs.length; ++i) {
-                    var tab = new Tab(options, svgViewModel, self, tabsGroup, [], toolPathsChanged, true);
+                for (let i = 0; i < json.tabs.length; ++i) {
+                    let tab = new Tab(options, svgViewModel, self, tabsGroup, [], toolPathsChanged, true);
                     self.tabs.push(tab);
                     tab.fromJson(json.tabs[i]);
                 }

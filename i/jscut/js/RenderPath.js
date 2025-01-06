@@ -17,25 +17,25 @@
 
 function RenderPath(options, canvas, shaderDir, shadersReady) {
     "use strict";
-    var self = this;
+    let self = this;
 
-    var needToCreatePathTexture = false;
-    var needToDrawHeightMap = false;
-    var requestFrame;
+    let needToCreatePathTexture = false;
+    let needToDrawHeightMap = false;
+    let requestFrame;
 
-    var gpuMem = 2 * 1024 * 1024;
-    var resolution = 1024;
-    var cutterDia = .125;
-    var cutterAngleRad = Math.PI;
-    var isVBit = false;
-    var cutterH = 0;
-    var pathXOffset = 0;
-    var pathYOffset = 0;
-    var pathScale = 1;
-    var pathMinZ = -1;
-    var pathTopZ = 0;
-    var stopAtTime = 9999999;
-    var rotate = mat4.create();
+    let gpuMem = 2 * 1024 * 1024;
+    let resolution = 1024;
+    let cutterDia = .125;
+    let cutterAngleRad = Math.PI;
+    let isVBit = false;
+    let cutterH = 0;
+    let pathXOffset = 0;
+    let pathYOffset = 0;
+    let pathScale = 1;
+    let pathMinZ = -1;
+    let pathTopZ = 0;
+    let stopAtTime = 9999999;
+    let rotate = mat4.create();
 
     $(canvas).resize(function () {
         needToDrawHeightMap = true;
@@ -47,7 +47,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
     function loadShader(filename, type, callback) {
         if (self.gl)
             $.get(filename, function (source) {
-                var shader = self.gl.createShader(type);
+                let shader = self.gl.createShader(type);
                 self.gl.shaderSource(shader, source);
                 self.gl.compileShader(shader);
                 if (self.gl.getShaderParameter(shader, self.gl.COMPILE_STATUS))
@@ -57,9 +57,9 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
             });
     }
 
-    var rasterizePathVertexShader;
-    var rasterizePathFragmentShader;
-    var rasterizePathProgram;
+    let rasterizePathVertexShader;
+    let rasterizePathFragmentShader;
+    let rasterizePathProgram;
 
     function linkRasterizePathProgram() {
         rasterizePathProgram = self.gl.createProgram();
@@ -90,9 +90,9 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         self.gl.useProgram(null);
     }
 
-    var renderHeightMapVertexShader;
-    var renderHeightMapFragmentShader;
-    var renderHeightMapProgram;
+    let renderHeightMapVertexShader;
+    let renderHeightMapFragmentShader;
+    let renderHeightMapProgram;
 
     function linkRenderHeightMapProgram() {
         renderHeightMapProgram = self.gl.createProgram();
@@ -121,9 +121,9 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         self.gl.useProgram(null);
     }
 
-    var basicVertexShader;
-    var basicFragmentShader;
-    var basicProgram;
+    let basicVertexShader;
+    let basicFragmentShader;
+    let basicProgram;
 
     function linkBasicProgram() {
         basicProgram = self.gl.createProgram();
@@ -156,18 +156,18 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         shadersReady(self);
     }
 
-    var pathBufferContent;
-    var pathNumPoints = 0;
-    var pathStride = 9;
-    var pathVertexesPerLine = 18;
-    var pathNumVertexes = 0;
+    let pathBufferContent;
+    let pathNumPoints = 0;
+    let pathStride = 9;
+    let pathVertexesPerLine = 18;
+    let pathNumVertexes = 0;
     self.totalTime = 0;
 
     self.fillPathBuffer = function (path, topZ, cutterDiameter, cutterAngle, cutterHeight) {
         if (!rasterizePathProgram || !renderHeightMapProgram || !basicProgram)
             return;
 
-        var startTime = Date.now();
+        let startTime = Date.now();
         if (options.profile)
             console.log("fillPathBuffer...");
 
@@ -180,9 +180,9 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         cutterH = cutterHeight;
         needToCreatePathTexture = true;
         requestFrame();
-        var inputStride = 4;
+        let inputStride = 4;
         pathNumPoints = path.length / inputStride;
-        var numHalfCircleSegments = 5;
+        let numHalfCircleSegments = 5;
 
         if (isVBit) {
             pathStride = 12;
@@ -193,29 +193,29 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         }
 
         pathNumVertexes = pathNumPoints * pathVertexesPerLine;
-        var bufferContent = new Float32Array(pathNumPoints * pathStride * pathVertexesPerLine);
+        let bufferContent = new Float32Array(pathNumPoints * pathStride * pathVertexesPerLine);
         pathBufferContent = bufferContent;
 
-        var minX = path[0];
-        var maxX = path[0];
-        var minY = path[1];
-        var maxY = path[1];
-        var minZ = path[2];
+        let minX = path[0];
+        let maxX = path[0];
+        let minY = path[1];
+        let maxY = path[1];
+        let minZ = path[2];
 
-        var time = 0;
-        for (var point = 0; point < pathNumPoints; ++point) {
-            var prevPoint = Math.max(point - 1, 0);
-            var pointBegin = point * inputStride;
-            var prevPointBegin = prevPoint * inputStride;
-            var x = path[pointBegin + 0];
-            var y = path[pointBegin + 1];
-            var z = path[pointBegin + 2];
-            var f = path[pointBegin + 3];
-            var prevX = path[prevPointBegin + 0];
-            var prevY = path[prevPointBegin + 1];
-            var prevZ = path[prevPointBegin + 2];
-            var dist = Math.sqrt((x - prevX) * (x - prevX) + (y - prevY) * (y - prevY) + (z - prevZ) * (z - prevZ));
-            var beginTime = time;
+        let time = 0;
+        for (let point = 0; point < pathNumPoints; ++point) {
+            let prevPoint = Math.max(point - 1, 0);
+            let pointBegin = point * inputStride;
+            let prevPointBegin = prevPoint * inputStride;
+            let x = path[pointBegin + 0];
+            let y = path[pointBegin + 1];
+            let z = path[pointBegin + 2];
+            let f = path[pointBegin + 3];
+            let prevX = path[prevPointBegin + 0];
+            let prevY = path[prevPointBegin + 1];
+            let prevZ = path[prevPointBegin + 2];
+            let dist = Math.sqrt((x - prevX) * (x - prevX) + (y - prevY) * (y - prevY) + (z - prevZ) * (z - prevZ));
+            let beginTime = time;
             time = time + dist / f * 60;
 
             minX = Math.min(minX, x);
@@ -225,20 +225,20 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
             minZ = Math.min(minZ, z);
 
             if (isVBit) {
-                var coneHeight = -Math.min(z, prevZ, 0) + .1;
-                var coneDia = coneHeight * 2 * Math.sin(cutterAngleRad / 2) / Math.cos(cutterAngleRad / 2);
+                let coneHeight = -Math.min(z, prevZ, 0) + .1;
+                let coneDia = coneHeight * 2 * Math.sin(cutterAngleRad / 2) / Math.cos(cutterAngleRad / 2);
 
-                var rotAngle;
+                let rotAngle;
                 if (x == prevX && y == prevY)
                     rotAngle = 0;
                 else
                     rotAngle = Math.atan2(y - prevY, x - prevX);
-                var xyDist = Math.sqrt((x - prevX) * (x - prevX) + (y - prevY) * (y - prevY));
+                let xyDist = Math.sqrt((x - prevX) * (x - prevX) + (y - prevY) * (y - prevY));
 
                 f = function (virtexIndex, command, rawX, rawY, rawZ, rotCos, rotSin, zOffset) {
                     if (typeof zOffset == 'undefined')
                         zOffset = 0;
-                    var base = point * pathStride * pathVertexesPerLine + virtexIndex * pathStride;
+                    let base = point * pathStride * pathVertexesPerLine + virtexIndex * pathStride;
                     bufferContent[base + 0] = prevX;
                     bufferContent[base + 1] = prevY;
                     bufferContent[base + 2] = prevZ + zOffset;
@@ -256,12 +256,12 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
                 if (Math.abs(z - prevZ) >= xyDist * Math.PI / 2 * Math.cos(cutterAngleRad / 2) / Math.sin(cutterAngleRad / 2)) {
                     //console.log("plunge or retract");
                     // plunge or retract
-                    var index = 0;
+                    let index = 0;
 
-                    var command = prevZ < z ? 100 : 101;
-                    for (var circleIndex = 0; circleIndex < numHalfCircleSegments*2; ++circleIndex) {
-                        var a1 = 2 * Math.PI * circleIndex / numHalfCircleSegments/2;
-                        var a2 = 2 * Math.PI * (circleIndex + 1) / numHalfCircleSegments/2;
+                    let command = prevZ < z ? 100 : 101;
+                    for (let circleIndex = 0; circleIndex < numHalfCircleSegments*2; ++circleIndex) {
+                        let a1 = 2 * Math.PI * circleIndex / numHalfCircleSegments/2;
+                        let a2 = 2 * Math.PI * (circleIndex + 1) / numHalfCircleSegments/2;
                         f(index++, command, coneDia / 2 * Math.cos(a2), coneDia / 2 * Math.sin(a2), coneHeight, 1, 0);
                         f(index++, command, 0, 0, 0, 1, 0);
                         f(index++, command, coneDia / 2 * Math.cos(a1), coneDia / 2 * Math.sin(a1), coneHeight, 1, 0);
@@ -274,12 +274,12 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
                 } else {
                     //console.log("cut");
                     // cut
-                    var planeContactAngle = Math.asin((prevZ - z) / xyDist * Math.sin(cutterAngleRad / 2) / Math.cos(cutterAngleRad / 2));
+                    let planeContactAngle = Math.asin((prevZ - z) / xyDist * Math.sin(cutterAngleRad / 2) / Math.cos(cutterAngleRad / 2));
                     //console.log("\nxyDist = ", xyDist);
                     //console.log("delta z = " + (z - prevZ));
                     //console.log("planeContactAngle = " + (planeContactAngle * 180 / Math.PI));
 
-                    var index = 0;
+                    let index = 0;
                     if (1) {
                         f(index++, 100, 0, -coneDia / 2, coneHeight, Math.cos(rotAngle - planeContactAngle), Math.sin(rotAngle - planeContactAngle));
                         f(index++, 101, 0, -coneDia / 2, coneHeight, Math.cos(rotAngle - planeContactAngle), Math.sin(rotAngle - planeContactAngle));
@@ -295,11 +295,11 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
                         f(index++, 101, 0, coneDia / 2, coneHeight, Math.cos(rotAngle + planeContactAngle), Math.sin(rotAngle + planeContactAngle));
                     }
 
-                    var startAngle = rotAngle + Math.PI / 2 - planeContactAngle;
-                    var endAngle = rotAngle + 3 * Math.PI / 2 + planeContactAngle;
-                    for (var circleIndex = 0; circleIndex < numHalfCircleSegments; ++circleIndex) {
-                        var a1 = startAngle + circleIndex / numHalfCircleSegments * (endAngle - startAngle);
-                        var a2 = startAngle + (circleIndex + 1) / numHalfCircleSegments * (endAngle - startAngle);
+                    let startAngle = rotAngle + Math.PI / 2 - planeContactAngle;
+                    let endAngle = rotAngle + 3 * Math.PI / 2 + planeContactAngle;
+                    for (let circleIndex = 0; circleIndex < numHalfCircleSegments; ++circleIndex) {
+                        let a1 = startAngle + circleIndex / numHalfCircleSegments * (endAngle - startAngle);
+                        let a2 = startAngle + (circleIndex + 1) / numHalfCircleSegments * (endAngle - startAngle);
                         //console.log("a1,a2: " + (a1 * 180 / Math.PI) + ", " + (a2 * 180 / Math.PI));
 
                         f(index++, 100, coneDia / 2 * Math.cos(a2), coneDia / 2 * Math.sin(a2), coneHeight, 1, 0);
@@ -316,8 +316,8 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
                     //    f(index++, 200, 0, 0, 0, 1, 0);
                 }
             } else {
-                for (var virtex = 0; virtex < pathVertexesPerLine; ++virtex) {
-                    var base = point * pathStride * pathVertexesPerLine + virtex * pathStride;
+                for (let virtex = 0; virtex < pathVertexesPerLine; ++virtex) {
+                    let base = point * pathStride * pathVertexesPerLine + virtex * pathStride;
                     bufferContent[base + 0] = prevX;
                     bufferContent[base + 1] = prevY;
                     bufferContent[base + 2] = prevZ;
@@ -336,7 +336,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
 
         pathXOffset = -(minX + maxX) / 2;
         pathYOffset = -(minY + maxY) / 2;
-        var size = Math.max(maxX - minX + 4 * cutterDia, maxY - minY + 4 * cutterDia);
+        let size = Math.max(maxX - minX + 4 * cutterDia, maxY - minY + 4 * cutterDia);
         pathScale = 2 / size;
         pathMinZ = minZ;
 
@@ -346,7 +346,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         requestFrame();
     }
 
-    var pathBuffer;
+    let pathBuffer;
 
     self.drawPath = function () {
         if (!rasterizePathProgram || !renderHeightMapProgram || !basicProgram)
@@ -388,13 +388,13 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         if(isVBit)
             self.gl.enableVertexAttribArray(rasterizePathProgram.rawPos);
 
-        var numTriangles = pathNumVertexes / 3;
-        var lastTriangle = 0;
-        var maxTriangles = Math.floor(gpuMem / pathStride / 3 / Float32Array.BYTES_PER_ELEMENT);
+        let numTriangles = pathNumVertexes / 3;
+        let lastTriangle = 0;
+        let maxTriangles = Math.floor(gpuMem / pathStride / 3 / Float32Array.BYTES_PER_ELEMENT);
 
         while (lastTriangle < numTriangles) {
-            var n = Math.min(numTriangles - lastTriangle, maxTriangles);
-            var b = new Float32Array(pathBufferContent.buffer, lastTriangle * pathStride * 3 * Float32Array.BYTES_PER_ELEMENT, n * pathStride * 3);
+            let n = Math.min(numTriangles - lastTriangle, maxTriangles);
+            let b = new Float32Array(pathBufferContent.buffer, lastTriangle * pathStride * 3 * Float32Array.BYTES_PER_ELEMENT, n * pathStride * 3);
             self.gl.bufferSubData(self.gl.ARRAY_BUFFER, 0, b);
             self.gl.drawArrays(self.gl.TRIANGLES, 0, n * 3);
             lastTriangle += n;
@@ -411,8 +411,8 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         self.gl.useProgram(null);
     }
 
-    var pathFramebuffer = null;
-    var pathRgbaTexture = null;
+    let pathFramebuffer = null;
+    let pathRgbaTexture = null;
 
     self.createPathTexture = function () {
         if (!rasterizePathProgram || !renderHeightMapProgram || !basicProgram)
@@ -430,7 +430,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
             self.gl.framebufferTexture2D(self.gl.FRAMEBUFFER, self.gl.COLOR_ATTACHMENT0, self.gl.TEXTURE_2D, pathRgbaTexture, 0);
             self.gl.bindTexture(self.gl.TEXTURE_2D, null);
 
-            var renderbuffer = self.gl.createRenderbuffer();
+            let renderbuffer = self.gl.createRenderbuffer();
             self.gl.bindRenderbuffer(self.gl.RENDERBUFFER, renderbuffer);
             self.gl.renderbufferStorage(self.gl.RENDERBUFFER, self.gl.DEPTH_COMPONENT16, resolution, resolution);
             self.gl.framebufferRenderbuffer(self.gl.FRAMEBUFFER, self.gl.DEPTH_ATTACHMENT, self.gl.RENDERBUFFER, renderbuffer);
@@ -445,25 +445,25 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         needToDrawHeightMap = true;
     }
 
-    var meshBuffer;
-    var meshStride = 9;
-    var meshNumVertexes = 0;
+    let meshBuffer;
+    let meshStride = 9;
+    let meshNumVertexes = 0;
 
     if (self.gl) {
-        var numTriangles = resolution * (resolution - 1);
+        let numTriangles = resolution * (resolution - 1);
         meshNumVertexes = numTriangles * 3;
-        var bufferContent = new Float32Array(meshNumVertexes * meshStride);
-        var pos = 0;
-        for (var y = 0; y < resolution - 1; ++y)
-            for (var x = 0; x < resolution; ++x) {
-                var left = x - 1;
+        let bufferContent = new Float32Array(meshNumVertexes * meshStride);
+        let pos = 0;
+        for (let y = 0; y < resolution - 1; ++y)
+            for (let x = 0; x < resolution; ++x) {
+                let left = x - 1;
                 if (left < 0)
                     left = 0;
-                var right = x + 1;
+                let right = x + 1;
                 if (right >= resolution)
                     right = resolution - 1;
                 if (!(x & 1) ^ (y & 1))
-                    for (var i = 0; i < 3; ++i) {
+                    for (let i = 0; i < 3; ++i) {
                         bufferContent[pos++] = left;
                         bufferContent[pos++] = y + 1;
                         bufferContent[pos++] = x;
@@ -484,7 +484,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
                         bufferContent[pos++] = i;
                     }
                 else
-                    for (var i = 0; i < 3; ++i) {
+                    for (let i = 0; i < 3; ++i) {
                         bufferContent[pos++] = left;
                         bufferContent[pos++] = y;
                         bufferContent[pos++] = right;
@@ -526,7 +526,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         self.gl.useProgram(renderHeightMapProgram);
         self.gl.clearColor(0.0, 0.0, 0.0, 1.0);
         self.gl.enable(self.gl.DEPTH_TEST);
-        var canvasSize = Math.min(canvas.width, canvas.height);
+        let canvasSize = Math.min(canvas.width, canvas.height);
         self.gl.viewport((canvas.width - canvasSize) / 2, (canvas.height - canvasSize) / 2, canvasSize, canvasSize);
         self.gl.clear(self.gl.COLOR_BUFFER_BIT | self.gl.DEPTH_BUFFER_BIT);
 
@@ -568,18 +568,18 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         needToDrawHeightMap = false;
     }
 
-    var cylBuffer;
-    var cylStride = 6;
-    var cylNumVertexes = 0;
+    let cylBuffer;
+    let cylStride = 6;
+    let cylNumVertexes = 0;
 
     if (self.gl) (function () {
-        var numDivisions = 40;
-        var numTriangles = numDivisions * 4;
+        let numDivisions = 40;
+        let numTriangles = numDivisions * 4;
         cylNumVertexes = numTriangles * 3;
-        var bufferContent = new Float32Array(cylNumVertexes * cylStride);
-        var r = 0.7, g = 0.7, b = 0.0;
+        let bufferContent = new Float32Array(cylNumVertexes * cylStride);
+        let r = 0.7, g = 0.7, b = 0.0;
 
-        var pos = 0;
+        let pos = 0;
         function addVertex(x, y, z) {
             bufferContent[pos++] = x;
             bufferContent[pos++] = y;
@@ -589,14 +589,14 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
             bufferContent[pos++] = b;
         }
 
-        var lastX = .5 * Math.cos(0);
-        var lastY = .5 * Math.sin(0);
-        for (var i = 0; i < numDivisions; ++i) {
-            var j = i + 1;
+        let lastX = .5 * Math.cos(0);
+        let lastY = .5 * Math.sin(0);
+        for (let i = 0; i < numDivisions; ++i) {
+            let j = i + 1;
             if (j == numDivisions)
                 j = 0;
-            var x = .5 * Math.cos(j * 2 * Math.PI / numDivisions);
-            var y = .5 * Math.sin(j * 2 * Math.PI / numDivisions);
+            let x = .5 * Math.cos(j * 2 * Math.PI / numDivisions);
+            let y = .5 * Math.sin(j * 2 * Math.PI / numDivisions);
 
             addVertex(lastX, lastY, 0);
             addVertex(x, y, 0);
@@ -623,7 +623,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
 
     function lowerBound(data, offset, stride, begin, end, value) {
         while (begin < end) {
-            var i = Math.floor((begin + end) / 2);
+            let i = Math.floor((begin + end) / 2);
             if (data[offset + i * stride] < value)
                 begin = i + 1;
             else
@@ -640,13 +640,13 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         if (!rasterizePathProgram || !renderHeightMapProgram || !basicProgram || pathNumPoints == 0)
             return;
 
-        var i = lowerBound(pathBufferContent, 7, pathStride * pathVertexesPerLine, 0, pathNumPoints, stopAtTime);
-        var x, y, z;
+        let i = lowerBound(pathBufferContent, 7, pathStride * pathVertexesPerLine, 0, pathNumPoints, stopAtTime);
+        let x, y, z;
         if (i < pathNumPoints) {
-            var offset = i * pathStride * pathVertexesPerLine;
-            var beginTime = pathBufferContent[offset + 6];
-            var endTime = pathBufferContent[offset + 7];
-            var ratio;
+            let offset = i * pathStride * pathVertexesPerLine;
+            let beginTime = pathBufferContent[offset + 6];
+            let endTime = pathBufferContent[offset + 7];
+            let ratio;
             if (endTime == beginTime)
                 ratio = 0;
             else
@@ -656,7 +656,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
             z = mix(pathBufferContent[offset + 2], pathBufferContent[offset + 5], ratio);
         }
         else {
-            var offset = (i-1) * pathStride * pathVertexesPerLine;
+            let offset = (i-1) * pathStride * pathVertexesPerLine;
             x = pathBufferContent[offset + 3];
             y = pathBufferContent[offset + 4];
             z = pathBufferContent[offset + 5];
@@ -684,7 +684,7 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
         self.gl.useProgram(null);
     }
 
-    var pendingRequest = false;
+    let pendingRequest = false;
     requestFrame = function () {
         if (!rasterizePathProgram || !renderHeightMapProgram || !basicProgram)
             return;
@@ -767,8 +767,8 @@ function RenderPath(options, canvas, shaderDir, shadersReady) {
 }
 
 function startRenderPath(options, canvas, timeSliderElement, shaderDir, ready) {
-    var renderPath;
-    var timeSlider;
+    let renderPath;
+    let timeSlider;
 
     if (timeSliderElement)
         timeSlider = timeSliderElement.slider({
@@ -783,11 +783,11 @@ function startRenderPath(options, canvas, timeSliderElement, shaderDir, ready) {
     renderPath = new RenderPath(options, canvas, shaderDir, function (renderPath) {
         renderPath.fillPathBuffer([], 0, 0, 180, 0);
 
-        var mouseDown = false;
-        var lastX = 0;
-        var lastY = 0;
+        let mouseDown = false;
+        let lastX = 0;
+        let lastY = 0;
 
-        var origRotate = mat4.create();
+        let origRotate = mat4.create();
         $(canvas).mousedown(function (e) {
             e.preventDefault();
             mouseDown = true;
@@ -799,7 +799,7 @@ function startRenderPath(options, canvas, timeSliderElement, shaderDir, ready) {
         $(document).mousemove(function (e) {
             if (!mouseDown)
                 return;
-            var m = mat4.create();
+            let m = mat4.create();
             mat4.rotate(m, m, Math.sqrt((e.pageX - lastX) * (e.pageX - lastX) + (e.pageY - lastY) * (e.pageY - lastY)) / 100, [e.pageY - lastY, e.pageX - lastX, 0]);
             mat4.multiply(m, m, origRotate);
             renderPath.setRotate(m);
@@ -821,7 +821,7 @@ function startRenderPath(options, canvas, timeSliderElement, shaderDir, ready) {
 }
 
 function startRenderPathDemo() {
-    var renderPath;
+    let renderPath;
     renderPath = startRenderPath({}, $("#renderPathCanvas")[0], $('#timeSlider'), 'js', function (renderPath) {
         $.get("logo-gcode.txt", function (gcode) {
             renderPath.fillPathBuffer(jscut.parseGcode({}, gcode), 0, .125, 180, 1);

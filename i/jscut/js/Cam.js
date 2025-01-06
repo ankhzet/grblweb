@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.priv = jscut.priv || {};
 jscut.priv.cam = jscut.priv.cam || {};
 
@@ -32,14 +32,14 @@ jscut.priv.cam = jscut.priv.cam || {};
             return true;
         if (p1.X == p2.X && p1.Y == p2.Y)
             return false;
-        var clipper = new ClipperLib.Clipper();
+        let clipper = new ClipperLib.Clipper();
         clipper.AddPath([p1, p2], ClipperLib.PolyType.ptSubject, false);
         clipper.AddPaths(bounds, ClipperLib.PolyType.ptClip, true);
-        var result = new ClipperLib.PolyTree();
+        let result = new ClipperLib.PolyTree();
         clipper.Execute(ClipperLib.ClipType.ctIntersection, result, ClipperLib.PolyFillType.pftEvenOdd, ClipperLib.PolyFillType.pftEvenOdd);
         if (result.ChildCount() == 1) {
-            var child = result.Childs()[0];
-            var points = child.Contour();
+            let child = result.Childs()[0];
+            let points = child.Contour();
             if (points.length == 2) {
                 if (points[0].X == p1.X && points[1].X == p2.X && points[0].Y == p1.Y && points[1].Y == p2.Y)
                     return false;
@@ -60,22 +60,24 @@ jscut.priv.cam = jscut.priv.cam || {};
         if (paths.length == 0)
             return null;
 
-        var currentPath = paths[0];
+        let currentPath = paths[0];
         currentPath.push(currentPath[0]);
-        var currentPoint = currentPath[currentPath.length - 1];
+        let currentPoint = currentPath[currentPath.length - 1];
         paths[0] = [];
 
-        var mergedPaths = [];
-        var numLeft = paths.length - 1;
+        let mergedPaths = [];
+        let numLeft = paths.length - 1;
         while (numLeft > 0) {
-            var closestPathIndex = null;
-            var closestPointIndex = null;
-            var closestPointDist = null;
-            for (var pathIndex = 0; pathIndex < paths.length; ++pathIndex) {
+            let closestPathIndex = null;
+            let closestPointIndex = null;
+            let closestPointDist = null;
+            let path;
+
+            for (let pathIndex = 0; pathIndex < paths.length; ++pathIndex) {
                 path = paths[pathIndex];
-                for (var pointIndex = 0; pointIndex < path.length; ++pointIndex) {
-                    var point = path[pointIndex];
-                    var dist = (currentPoint.X - point.X) * (currentPoint.X - point.X) + (currentPoint.Y - point.Y) * (currentPoint.Y - point.Y);
+                for (let pointIndex = 0; pointIndex < path.length; ++pointIndex) {
+                    let point = path[pointIndex];
+                    let dist = (currentPoint.X - point.X) * (currentPoint.X - point.X) + (currentPoint.Y - point.Y) * (currentPoint.Y - point.Y);
                     if (closestPointDist == null || dist < closestPointDist) {
                         closestPathIndex = pathIndex;
                         closestPointIndex = pointIndex;
@@ -87,7 +89,7 @@ jscut.priv.cam = jscut.priv.cam || {};
             path = paths[closestPathIndex];
             paths[closestPathIndex] = [];
             numLeft -= 1;
-            var needNew = crosses(bounds, currentPoint, path[closestPointIndex]);
+            let needNew = crosses(bounds, currentPoint, path[closestPointIndex]);
             path = path.slice(closestPointIndex, path.length).concat(path.slice(0, closestPointIndex));
             path.push(path[0]);
             if (needNew) {
@@ -102,9 +104,9 @@ jscut.priv.cam = jscut.priv.cam || {};
         }
         mergedPaths.push(currentPath);
 
-        var camPaths = [];
-        for (var i = 0; i < mergedPaths.length; ++i) {
-            var path = mergedPaths[i];
+        let camPaths = [];
+        for (let i = 0; i < mergedPaths.length; ++i) {
+            let path = mergedPaths[i];
             camPaths.push({
                 path: path,
                 safeToClose: !crosses(bounds, path[0], path[path.length - 1])
@@ -117,12 +119,12 @@ jscut.priv.cam = jscut.priv.cam || {};
     // Compute paths for pocket operation on Clipper geometry. Returns array
     // of CamPath. cutterDia is in Clipper units. overlap is in the range [0, 1).
     jscut.priv.cam.pocket = function (geometry, cutterDia, overlap, climb) {
-        var current = jscut.priv.path.offset(geometry, -cutterDia / 2);
-        var bounds = current.slice(0);
-        var allPaths = [];
+        let current = jscut.priv.path.offset(geometry, -cutterDia / 2);
+        let bounds = current.slice(0);
+        let allPaths = [];
         while (current.length != 0) {
             if (climb)
-                for (var i = 0; i < current.length; ++i)
+                for (let i = 0; i < current.length; ++i)
                     current[i].reverse();
             allPaths = current.concat(allPaths);
             current = jscut.priv.path.offset(current, -cutterDia * (1 - overlap));
@@ -135,13 +137,13 @@ jscut.priv.cam = jscut.priv.cam || {};
     jscut.priv.cam.hspocket = function (geometry, cutterDia, overlap, climb) {
         "use strict";
 
-        var memoryBlocks = [];
+        let memoryBlocks = [];
 
-        var cGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, geometry);
+        let cGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, geometry);
 
-        var resultPathsRef = Module._malloc(4);
-        var resultNumPathsRef = Module._malloc(4);
-        var resultPathSizesRef = Module._malloc(4);
+        let resultPathsRef = Module._malloc(4);
+        let resultNumPathsRef = Module._malloc(4);
+        let resultPathSizesRef = Module._malloc(4);
         memoryBlocks.push(resultPathsRef);
         memoryBlocks.push(resultNumPathsRef);
         memoryBlocks.push(resultPathSizesRef);
@@ -154,9 +156,9 @@ jscut.priv.cam = jscut.priv.cam || {};
             'void', ['number', 'number', 'number', 'number', 'number', 'number', 'number'],
             [cGeometry[0], cGeometry[1], cGeometry[2], cutterDia, resultPathsRef, resultNumPathsRef, resultPathSizesRef]);
 
-        var result = jscut.priv.path.convertPathsFromCppToCamPath(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
+        let result = jscut.priv.path.convertPathsFromCppToCamPath(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
 
-        for (var i = 0; i < memoryBlocks.length; ++i)
+        for (let i = 0; i < memoryBlocks.length; ++i)
             Module._free(memoryBlocks[i]);
 
         return result;
@@ -166,14 +168,14 @@ jscut.priv.cam = jscut.priv.cam || {};
     // of CamPath. cutterDia and width are in Clipper units. overlap is in the 
     // range [0, 1).
     jscut.priv.cam.outline = function (geometry, cutterDia, isInside, width, overlap, climb) {
-        var currentWidth = cutterDia;
-        var allPaths = [];
-        var eachWidth = cutterDia * (1 - overlap);
+        let currentWidth = cutterDia;
+        let allPaths = [];
+        let eachWidth = cutterDia * (1 - overlap);
 
-        var current;
-        var bounds;
-        var eachOffset;
-        var needReverse;
+        let current;
+        let bounds;
+        let eachOffset;
+        let needReverse;
 
         if (isInside) {
             current = jscut.priv.path.offset(geometry, -cutterDia / 2);
@@ -189,14 +191,14 @@ jscut.priv.cam = jscut.priv.cam || {};
 
         while (currentWidth <= width) {
             if (needReverse)
-                for (var i = 0; i < current.length; ++i)
+                for (let i = 0; i < current.length; ++i)
                     current[i].reverse();
             allPaths = current.concat(allPaths);
-            var nextWidth = currentWidth + eachWidth;
+            let nextWidth = currentWidth + eachWidth;
             if (nextWidth > width && width - currentWidth > 0) {
                 current = jscut.priv.path.offset(current, width - currentWidth);
                 if (needReverse)
-                    for (var i = 0; i < current.length; ++i)
+                    for (let i = 0; i < current.length; ++i)
                         current[i].reverse();
                 allPaths = current.concat(allPaths);
                 break;
@@ -210,16 +212,16 @@ jscut.priv.cam = jscut.priv.cam || {};
     // Compute paths for engrave operation on Clipper geometry. Returns array
     // of CamPath.
     jscut.priv.cam.engrave = function (geometry, climb) {
-        var allPaths = [];
-        for (var i = 0; i < geometry.length; ++i) {
-            var path = geometry[i].slice(0);
+        let allPaths = [];
+        for (let i = 0; i < geometry.length; ++i) {
+            let path = geometry[i].slice(0);
             if (!climb)
                 path.reverse();
             path.push(path[0]);
             allPaths.push(path);
         }
-        var result = mergePaths(null, allPaths);
-        for (var i = 0; i < result.length; ++i)
+        let result = mergePaths(null, allPaths);
+        for (let i = 0; i < result.length; ++i)
             result[i].safeToClose = true;
         return result;
     };
@@ -230,13 +232,13 @@ jscut.priv.cam = jscut.priv.cam || {};
         if (cutterAngle <= 0 || cutterAngle >= 180)
             return [];
 
-        var memoryBlocks = [];
+        let memoryBlocks = [];
 
-        var cGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, geometry);
+        let cGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, geometry);
 
-        var resultPathsRef = Module._malloc(4);
-        var resultNumPathsRef = Module._malloc(4);
-        var resultPathSizesRef = Module._malloc(4);
+        let resultPathsRef = Module._malloc(4);
+        let resultNumPathsRef = Module._malloc(4);
+        let resultPathSizesRef = Module._malloc(4);
         memoryBlocks.push(resultPathsRef);
         memoryBlocks.push(resultNumPathsRef);
         memoryBlocks.push(resultPathSizesRef);
@@ -251,9 +253,9 @@ jscut.priv.cam = jscut.priv.cam || {};
             'void', ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
             [miscViewModel.debugArg0(), miscViewModel.debugArg1(), cGeometry[0], cGeometry[1], cGeometry[2], cutterAngle, passDepth, maxDepth, resultPathsRef, resultNumPathsRef, resultPathSizesRef]);
 
-        var result = jscut.priv.path.convertPathsFromCppToCamPath(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
+        let result = jscut.priv.path.convertPathsFromCppToCamPath(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
 
-        for (var i = 0; i < memoryBlocks.length; ++i)
+        for (let i = 0; i < memoryBlocks.length; ++i)
             Module._free(memoryBlocks[i]);
 
         return result;
@@ -261,15 +263,15 @@ jscut.priv.cam = jscut.priv.cam || {};
 
     // Convert array of CamPath to array of Clipper path
     jscut.priv.cam.getClipperPathsFromCamPaths = function (paths) {
-        var result = [];
+        let result = [];
         if (paths != null)
-            for (var i = 0; i < paths.length; ++i)
+            for (let i = 0; i < paths.length; ++i)
                 result.push(paths[i].path);
         return result;
     }
 
-    var displayedCppTabError1 = false;
-    var displayedCppTabError2 = false;
+    let displayedCppTabError1 = false;
+    let displayedCppTabError2 = false;
 
     function separateTabs(cutterPath, tabGeometry) {
         "use strict";
@@ -284,15 +286,15 @@ jscut.priv.cam = jscut.priv.cam || {};
             return cutterPath;
         }
 
-        var memoryBlocks = [];
+        let memoryBlocks = [];
 
-        var cCutterPath = jscut.priv.path.convertPathsToCpp(memoryBlocks, [cutterPath]);
-        var cTabGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, tabGeometry);
+        let cCutterPath = jscut.priv.path.convertPathsToCpp(memoryBlocks, [cutterPath]);
+        let cTabGeometry = jscut.priv.path.convertPathsToCpp(memoryBlocks, tabGeometry);
 
-        var errorRef = Module._malloc(4);
-        var resultPathsRef = Module._malloc(4);
-        var resultNumPathsRef = Module._malloc(4);
-        var resultPathSizesRef = Module._malloc(4);
+        let errorRef = Module._malloc(4);
+        let resultPathsRef = Module._malloc(4);
+        let resultNumPathsRef = Module._malloc(4);
+        let resultPathSizesRef = Module._malloc(4);
         memoryBlocks.push(errorRef);
         memoryBlocks.push(resultPathsRef);
         memoryBlocks.push(resultNumPathsRef);
@@ -313,9 +315,9 @@ jscut.priv.cam = jscut.priv.cam || {};
             displayedCppTabError2 = true;
         }
 
-        var result = jscut.priv.path.convertPathsFromCpp(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
+        let result = jscut.priv.path.convertPathsFromCpp(memoryBlocks, resultPathsRef, resultNumPathsRef, resultPathSizesRef);
 
-        for (var i = 0; i < memoryBlocks.length; ++i)
+        for (let i = 0; i < memoryBlocks.length; ++i)
             Module._free(memoryBlocks[i]);
 
         return result;
@@ -342,23 +344,23 @@ jscut.priv.cam = jscut.priv.cam || {};
     //      tabGeometry:    Tab geometry (optional)
     //      tabZ:           Z position over tabs (required if tabGeometry is not empty) (gcode units)
     jscut.priv.cam.getGcode = function (namedArgs) {
-        var paths = namedArgs.paths;
-        var ramp = namedArgs.ramp;
-        var scale = namedArgs.scale;
-        var useZ = namedArgs.useZ;
-        var offsetX = namedArgs.offsetX;
-        var offsetY = namedArgs.offsetY;
-        var decimal = namedArgs.decimal;
-        var topZ = namedArgs.topZ;
-        var botZ = namedArgs.botZ;
-        var safeZ = namedArgs.safeZ;
-        var passDepth = namedArgs.passDepth;
-        var plungeFeedGcode = ' F' + namedArgs.plungeFeed;
-        var retractFeedGcode = ' F' + namedArgs.retractFeed;
-        var cutFeedGcode = ' F' + namedArgs.cutFeed;
-        var rapidFeedGcode = ' F' + namedArgs.rapidFeed;
-        var tabGeometry = namedArgs.tabGeometry;
-        var tabZ = namedArgs.tabZ;
+        let paths = namedArgs.paths;
+        let ramp = namedArgs.ramp;
+        let scale = namedArgs.scale;
+        let useZ = namedArgs.useZ;
+        let offsetX = namedArgs.offsetX;
+        let offsetY = namedArgs.offsetY;
+        let decimal = namedArgs.decimal;
+        let topZ = namedArgs.topZ;
+        let botZ = namedArgs.botZ;
+        let safeZ = namedArgs.safeZ;
+        let passDepth = namedArgs.passDepth;
+        let plungeFeedGcode = ' F' + namedArgs.plungeFeed;
+        let retractFeedGcode = ' F' + namedArgs.retractFeed;
+        let cutFeedGcode = ' F' + namedArgs.cutFeed;
+        let rapidFeedGcode = ' F' + namedArgs.rapidFeed;
+        let tabGeometry = namedArgs.tabGeometry;
+        let tabZ = namedArgs.tabZ;
 
         if (typeof useZ == 'undefined')
             useZ = false;
@@ -368,13 +370,13 @@ jscut.priv.cam = jscut.priv.cam || {};
             tabZ = botZ;
         }
 
-        var gcode = "";
+        let gcode = "";
 
-        var retractGcode =
+        let retractGcode =
             '; Retract\r\n' +
             'G1 Z' + safeZ.toFixed(decimal) + rapidFeedGcode + '\r\n';
 
-        var retractForTabGcode =
+        let retractForTabGcode =
             '; Retract for tab\r\n' +
             'G1 Z' + tabZ.toFixed(decimal) + rapidFeedGcode + '\r\n';
 
@@ -387,27 +389,27 @@ jscut.priv.cam = jscut.priv.cam || {};
         }
 
         function convertPoint(p) {
-            result = ' X' + (p.X * scale + offsetX).toFixed(decimal) + ' Y' + (-p.Y * scale + offsetY).toFixed(decimal);
+            let result = ' X' + (p.X * scale + offsetX).toFixed(decimal) + ' Y' + (-p.Y * scale + offsetY).toFixed(decimal);
             if (useZ)
                 result += ' Z' + (p.Z * scale + topZ).toFixed(decimal);
             return result;
         }
 
-        for (var pathIndex = 0; pathIndex < paths.length; ++pathIndex) {
-            var path = paths[pathIndex];
-            var origPath = path.path;
+        for (let pathIndex = 0; pathIndex < paths.length; ++pathIndex) {
+            let path = paths[pathIndex];
+            let origPath = path.path;
             if (origPath.length == 0)
                 continue;
-            var separatedPaths = separateTabs(origPath, tabGeometry);
+            let separatedPaths = separateTabs(origPath, tabGeometry);
 
             gcode +=
                 '\r\n' +
                 '; Path ' + pathIndex + '\r\n';
 
-            var currentZ = safeZ;
-            var finishedZ = topZ;
+            let currentZ = safeZ;
+            let finishedZ = topZ;
             while (finishedZ > botZ) {
-                var nextZ = Math.max(finishedZ - passDepth, botZ);
+                let nextZ = Math.max(finishedZ - passDepth, botZ);
                 if (currentZ < safeZ && (!path.safeToClose || tabGeometry.length > 0)) {
                     gcode += retractGcode;
                     currentZ = safeZ;
@@ -422,31 +424,31 @@ jscut.priv.cam = jscut.priv.cam || {};
                     'G1' + convertPoint(origPath[0]) + rapidFeedGcode + '\r\n' +
                     'G1 Z' + currentZ.toFixed(decimal) + '\r\n';
 
-                var selectedPaths;
+                let selectedPaths;
                 if (nextZ >= tabZ || useZ)
                     selectedPaths = [origPath];
                 else
                     selectedPaths = separatedPaths;
 
-                for (var selectedIndex = 0; selectedIndex < selectedPaths.length; ++selectedIndex) {
-                    var selectedPath = selectedPaths[selectedIndex];
+                for (let selectedIndex = 0; selectedIndex < selectedPaths.length; ++selectedIndex) {
+                    let selectedPath = selectedPaths[selectedIndex];
                     if (selectedPath.length == 0)
                         continue;
 
                     if (!useZ) {
-                        var selectedZ;
+                        let selectedZ;
                         if (selectedIndex & 1)
                             selectedZ = tabZ;
                         else
                             selectedZ = nextZ;
 
                         if (selectedZ < currentZ) {
-                            var executedRamp = false;
+                            let executedRamp = false;
                             if (ramp) {
-                                var minPlungeTime = (currentZ - selectedZ) / namedArgs.plungeFeed;
-                                var idealDist = namedArgs.cutFeed * minPlungeTime;
-                                var end;
-                                var totalDist = 0;
+                                let minPlungeTime = (currentZ - selectedZ) / namedArgs.plungeFeed;
+                                let idealDist = namedArgs.cutFeed * minPlungeTime;
+                                let end;
+                                let totalDist = 0;
                                 for (end = 1; end < selectedPath.length; ++end) {
                                     if (totalDist > idealDist)
                                         break;
@@ -455,11 +457,11 @@ jscut.priv.cam = jscut.priv.cam || {};
                                 if (totalDist > 0) {
                                     gcode += '; ramp\r\n'
                                     executedRamp = true;
-                                    var rampPath = selectedPath.slice(0, end).concat(selectedPath.slice(0, end - 1).reverse());
-                                    var distTravelled = 0;
-                                    for (var i = 1; i < rampPath.length; ++i) {
+                                    let rampPath = selectedPath.slice(0, end).concat(selectedPath.slice(0, end - 1).reverse());
+                                    let distTravelled = 0;
+                                    for (let i = 1; i < rampPath.length; ++i) {
                                         distTravelled += dist(getX(rampPath[i - 1]), getY(rampPath[i - 1]), getX(rampPath[i]), getY(rampPath[i]));
-                                        var newZ = currentZ + distTravelled / totalDist * (selectedZ - currentZ);
+                                        let newZ = currentZ + distTravelled / totalDist * (selectedZ - currentZ);
                                         gcode += 'G1' + convertPoint(rampPath[i]) + ' Z' + newZ.toFixed(decimal);
                                         if (i == 1)
                                             gcode += ' F' + Math.min(totalDist / minPlungeTime, namedArgs.cutFeed).toFixed(decimal) + '\r\n';
@@ -480,7 +482,7 @@ jscut.priv.cam = jscut.priv.cam || {};
 
                     gcode += '; cut\r\n';
 
-                    for (var i = 1; i < selectedPath.length; ++i) {
+                    for (let i = 1; i < selectedPath.length; ++i) {
                         gcode += 'G1' + convertPoint(selectedPath[i]);
                         if (i == 1)
                             gcode += cutFeedGcode + '\r\n';

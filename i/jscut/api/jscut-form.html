@@ -137,7 +137,7 @@ along with jscut.  If not, see <http: />/www.gnu.org/licenses/>.
     <script>
         Polymer('jscut-unit-converter', {
             unitsChanged: function (oldValue, newValue) {
-                var factor = 1;
+                let factor = 1;
                 if (oldValue == 'inch' && newValue == 'mm')
                     factor = 25.4;
                 else if (oldValue == 'mm' && newValue == 'inch')

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.cam = jscut.cam || {};
 
 (function () {
@@ -25,7 +25,7 @@ jscut.cam = jscut.cam || {};
     jscut.cam.getCombinedGeometry = function (operation) {
         operation = jscut.data.cleanOperation(operation);
 
-        var combineFn;
+        let combineFn;
         if (operation.combineOp == 'Union')
             combineFn = jscut.geometry.union;
         else if (operation.combineOp == 'Intersect')
@@ -42,8 +42,8 @@ jscut.cam = jscut.cam || {};
         if (operation.geometries.length == 0)
             return [];
 
-        var result = operation.geometries[0];
-        for (var i = 1; i < operation.geometries.length; ++i)
+        let result = operation.geometries[0];
+        for (let i = 1; i < operation.geometries.length; ++i)
             result = combineFn(result, operation.geometries[i]);
         return result;
     }
@@ -53,17 +53,17 @@ jscut.cam = jscut.cam || {};
         operation = jscut.data.cleanOperation(operation);
         tool = jscut.data.cleanTool(tool);
 
-        var result = jscut.cam.getCombinedGeometry(operation);
+        let result = jscut.cam.getCombinedGeometry(operation);
 
-        var grow = operation.margin;
+        let grow = operation.margin;
         if (operation.camOp == "Pocket" || operation.camOp == "Inside")
             grow = -grow;
         if (operation.camOp != "Engrave" && grow != 0)
             result = jscut.geometry.grow(result, grow, operation.units, 'round');
 
         if (operation.camOp == "Inside" || operation.camOp == "Outside" || operation.camOp == "Engrave") {
-            var width = jscut.data.getInchConversion(operation.units) * operation.width;
-            var diameter = jscut.data.getInchConversion(tool.units) * tool.diameter;
+            let width = jscut.data.getInchConversion(operation.units) * operation.width;
+            let diameter = jscut.data.getInchConversion(tool.units) * tool.diameter;
             if (width < diameter || operation.camOp == "Engrave")
                 width = diameter;
             if (operation.camOp == "Inside")
@@ -88,20 +88,20 @@ jscut.cam = jscut.cam || {};
         operation = jscut.data.cleanOperation(operation);
         tool = jscut.data.cleanTool(tool);
 
-        var geometry = jscut.cam.getCombinedGeometry(operation);
+        let geometry = jscut.cam.getCombinedGeometry(operation);
 
-        var grow = operation.margin;
+        let grow = operation.margin;
         if (operation.camOp == "Pocket" || operation.camOp == "Inside")
             grow = -grow;
         if (operation.camOp != "Engrave" && grow != 0)
             geometry = jscut.geometry.grow(geometry, grow, operation.units, 'round');
 
-        var diameter = jscut.geometry.getConversion(tool.units) * tool.diameter;
+        let diameter = jscut.geometry.getConversion(tool.units) * tool.diameter;
 
         if (operation.camOp == "Pocket")
             return jscut.priv.cam.pocket(geometry, diameter, 1 - tool.stepover, operation.direction == "Climb");
         else if (operation.camOp == "Inside" || operation.camOp == "Outside") {
-            var width = jscut.geometry.getConversion(operation.units) * operation.width;
+            let width = jscut.geometry.getConversion(operation.units) * operation.width;
             if (width < diameter)
                 width = diameter;
             return jscut.priv.cam.outline(geometry, diameter, operation.camOp == "Inside", width, 1 - tool.stepover, operation.direction == "Climb");
@@ -116,8 +116,8 @@ jscut.cam = jscut.cam || {};
 
     // Convert cam paths to SVG path data format ('d' attribute).
     jscut.cam.toSvgPathData = function (camPaths, pxPerInch) {
-        var paths = [];
-        for (var i = 0; i < camPaths.length; ++i)
+        let paths = [];
+        for (let i = 0; i < camPaths.length; ++i)
             paths.push(camPaths[i].path);
         return jscut.geometry.toSvgPathData(paths, pxPerInch, false);
     }
@@ -128,15 +128,15 @@ jscut.cam = jscut.cam || {};
         material = jscut.data.cleanMaterial(material);
         gcodeOptions = jscut.data.cleanGcodeOptions(gcodeOptions);
 
-        var fromToolConv = jscut.data.getInchConversion(tool.units);
-        var fromMatConv = jscut.data.getInchConversion(material.units);
-        var toGcodeConv = 1 / jscut.data.getInchConversion(gcodeOptions.units);
+        let fromToolConv = jscut.data.getInchConversion(tool.units);
+        let fromMatConv = jscut.data.getInchConversion(material.units);
+        let toGcodeConv = 1 / jscut.data.getInchConversion(gcodeOptions.units);
 
-        var topZ = 0;
+        let topZ = 0;
         if (material.zOrigin != "Top")
             topZ = material.thickness * fromMatConv * toGcodeConv;
 
-        var gcode = "";
+        let gcode = "";
         if (gcodeOptions.units == "inch")
             gcode += "G20         ; Set units to inches\r\n";
         else
@@ -154,19 +154,19 @@ jscut.cam = jscut.cam || {};
         material = jscut.data.cleanMaterial(material);
         gcodeOptions = jscut.data.cleanGcodeOptions(gcodeOptions);
 
-        var fromOpConv = jscut.data.getInchConversion(operation.units);
-        var fromToolConv = jscut.data.getInchConversion(tool.units);
-        var fromMatConv = jscut.data.getInchConversion(material.units);
-        var toGcodeConv = 1 / jscut.data.getInchConversion(gcodeOptions.units);
+        let fromOpConv = jscut.data.getInchConversion(operation.units);
+        let fromToolConv = jscut.data.getInchConversion(tool.units);
+        let fromMatConv = jscut.data.getInchConversion(material.units);
+        let toGcodeConv = 1 / jscut.data.getInchConversion(gcodeOptions.units);
 
-        var topZ = 0;
-        var botZ = -operation.cutDepth * fromOpConv * toGcodeConv;
+        let topZ = 0;
+        let botZ = -operation.cutDepth * fromOpConv * toGcodeConv;
         if (material.zOrigin != "Top") {
             topZ = material.thickness * fromMatConv * toGcodeConv;
             botZ = topZ + botZ;
         }
         
-        var gcode =
+        let gcode =
             "\r\n;" +
             "\r\n; Operation:    " + opIndex +
             "\r\n; Name:         " + operation.name +

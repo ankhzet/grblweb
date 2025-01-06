@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.priv = jscut.priv || {};
 jscut.priv.path = jscut.priv.path || {};
 
@@ -35,15 +35,15 @@ jscut.priv.path = jscut.priv.path || {};
         if (p1x == c1x && p1y == c1y && p2x == c2x && p2y == c2y)
             return ['L', p2x, p2y];
 
-        var numSegments = minNumSegments;
+        let numSegments = minNumSegments;
         while (true) {
-            var x = p1x;
-            var y = p1y;
-            var result = ['L'];
-            for (var i = 1; i <= numSegments; ++i) {
-                var t = 1.0 * i / numSegments;
-                var nextX = bez(p1x, c1x, c2x, p2x, t);
-                var nextY = bez(p1y, c1y, c2y, p2y, t);
+            let x = p1x;
+            let y = p1y;
+            let result = ['L'];
+            for (let i = 1; i <= numSegments; ++i) {
+                let t = 1.0 * i / numSegments;
+                let nextX = bez(p1x, c1x, c2x, p2x, t);
+                let nextY = bez(p1y, c1y, c2y, p2y, t);
                 if ((nextX - x) * (nextX - x) + (nextY - y) * (nextY - y) > minSegmentLength * minSegmentLength) {
                     numSegments *= 2;
                     result = null;
@@ -65,11 +65,11 @@ jscut.priv.path = jscut.priv.path || {};
             alertFn("Path does not begin with M")
             return null;
         }
-        var x = path[0][1];
-        var y = path[0][2];
-        var result = [path[0]];
-        for (var i = 1; i < path.length; ++i) {
-            var subpath = path[i];
+        let x = path[0][1];
+        let y = path[0][2];
+        let result = [path[0]];
+        for (let i = 1; i < path.length; ++i) {
+            let subpath = path[i];
             if (subpath[0] == 'C' && subpath.length == 7) {
                 result.push(linearizeCubicBezier(
                     x, y, subpath[1], subpath[2], subpath[3], subpath[4], subpath[5], subpath[6], minNumSegments, minSegmentLength));
@@ -91,17 +91,17 @@ jscut.priv.path = jscut.priv.path || {};
     // error message and returns null if there's a problem. Returns null without calling
     // alertFn if element.type == "svg".
     jscut.priv.path.getLinearSnapPathFromElement = function (element, minNumSegments, minSegmentLength, alertFn) {
-        var path = null;
+        let path = null;
 
         if (element.type == "svg")
             return null;
         else if (element.type == "path")
             path = element.attr("d");
         else if (element.type == "rect") {
-            var x = Number(element.attr("x"));
-            var y = Number(element.attr("y"));
-            var w = Number(element.attr("width"));
-            var h = Number(element.attr("height"));
+            let x = Number(element.attr("x"));
+            let y = Number(element.attr("y"));
+            let w = Number(element.attr("width"));
+            let h = Number(element.attr("height"));
             path = 'm' + x + ',' + y + ' ' + w + ',' + 0 + ' ' + 0 + ',' + h + ' ' + (-w) + ',' + 0 + ' ' + 0 + ',' + (-h) + ' ';
         }
         else {
@@ -145,15 +145,15 @@ jscut.priv.path = jscut.priv.path || {};
             alertFn("Path does not begin with M");
             return null;
         }
-        var currentPath = [getClipperPointFromSnapPoint(path[0][1], path[0][2])];
-        var result = [currentPath];
-        for (var i = 1; i < path.length; ++i) {
-            var subpath = path[i];
+        let currentPath = [getClipperPointFromSnapPoint(path[0][1], path[0][2])];
+        let result = [currentPath];
+        for (let i = 1; i < path.length; ++i) {
+            let subpath = path[i];
             if (subpath[0] == 'M' && subpath.length == 3) {
                 currentPath = [getClipperPointFromSnapPoint(subpath[1], subpath[2])];
                 result.push(currentPath);
             } else if (subpath[0] == 'L') {
-                for (var j = 0; j < (subpath.length - 1) / 2; ++j)
+                for (let j = 0; j < (subpath.length - 1) / 2; ++j)
                     currentPath.push(getClipperPointFromSnapPoint(subpath[1 + j * 2], subpath[2 + j * 2]));
             } else {
                 alertFn("Subpath has a non-linear prefix: " + subpath[0]);
@@ -170,14 +170,14 @@ jscut.priv.path = jscut.priv.path || {};
             a.push(p.Y * pxPerInch / jscut.priv.path.inchToClipperScale);
         }
 
-        var result = [];
-        for (var i = 0; i < path.length; ++i) {
-            var p = path[i];
-            var m = ['M'];
+        let result = [];
+        for (let i = 0; i < path.length; ++i) {
+            let p = path[i];
+            let m = ['M'];
             pushSnapPointFromClipperPoint(m, p[0]);
             result.push(m);
-            var l = ['L'];
-            for (var j = 1; j < p.length; ++j)
+            let l = ['L'];
+            for (let j = 1; j < p.length; ++j)
                 pushSnapPointFromClipperPoint(l, p[j]);
             result.push(l);
         }
@@ -186,28 +186,28 @@ jscut.priv.path = jscut.priv.path || {};
 
     // Convert Clipper paths to C format. Returns [double** cPaths, int cNumPaths, int* cPathSizes].
     jscut.priv.path.convertPathsToCpp = function(memoryBlocks, paths) {
-        var doubleSize = 8;
+        let doubleSize = 8;
 
-        var cPaths = Module._malloc(paths.length * 4);
+        let cPaths = Module._malloc(paths.length * 4);
         memoryBlocks.push(cPaths);
-        var cPathsBase = cPaths >> 2;
+        let cPathsBase = cPaths >> 2;
 
-        var cPathSizes = Module._malloc(paths.length * 4);
+        let cPathSizes = Module._malloc(paths.length * 4);
         memoryBlocks.push(cPathSizes);
-        var cPathSizesBase = cPathSizes >> 2;
+        let cPathSizesBase = cPathSizes >> 2;
 
-        for (var i = 0; i < paths.length; ++i) {
-            var path = paths[i];
+        for (let i = 0; i < paths.length; ++i) {
+            let path = paths[i];
 
-            var cPath = Module._malloc(path.length * 2 * doubleSize + 4);
+            let cPath = Module._malloc(path.length * 2 * doubleSize + 4);
             memoryBlocks.push(cPath);
             if (cPath & 4)
                 cPath += 4;
             //console.log("-> " + cPath.toString(16));
-            var pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
+            let pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
 
-            for (var j = 0; j < path.length; ++j) {
-                var point = path[j];
+            for (let j = 0; j < path.length; ++j) {
+                let point = path[j];
                 pathArray[j * 2] = point.X;
                 pathArray[j * 2 + 1] = point.Y;
             }
@@ -222,29 +222,29 @@ jscut.priv.path = jscut.priv.path || {};
     // Convert C format paths to Clipper paths. double**& cPathsRef, int& cNumPathsRef, int*& cPathSizesRef
     // This version assume each point has X, Y (stride = 2).
     jscut.priv.path.convertPathsFromCpp = function (memoryBlocks, cPathsRef, cNumPathsRef, cPathSizesRef) {
-        var cPaths = Module.HEAPU32[cPathsRef >> 2];
+        let cPaths = Module.HEAPU32[cPathsRef >> 2];
         memoryBlocks.push(cPaths);
-        var cPathsBase = cPaths >> 2;
+        let cPathsBase = cPaths >> 2;
 
-        var cNumPaths = Module.HEAPU32[cNumPathsRef >> 2];
+        let cNumPaths = Module.HEAPU32[cNumPathsRef >> 2];
 
-        var cPathSizes = Module.HEAPU32[cPathSizesRef >> 2];
+        let cPathSizes = Module.HEAPU32[cPathSizesRef >> 2];
         memoryBlocks.push(cPathSizes);
-        var cPathSizesBase = cPathSizes >> 2;
+        let cPathSizesBase = cPathSizes >> 2;
 
-        var convertedPaths = [];
-        for (var i = 0; i < cNumPaths; ++i) {
-            var pathSize = Module.HEAPU32[cPathSizesBase + i];
-            var cPath = Module.HEAPU32[cPathsBase + i];
+        let convertedPaths = [];
+        for (let i = 0; i < cNumPaths; ++i) {
+            let pathSize = Module.HEAPU32[cPathSizesBase + i];
+            let cPath = Module.HEAPU32[cPathsBase + i];
             // cPath contains value to pass to Module._free(). The aligned version contains the actual data.
             memoryBlocks.push(cPath);
             if (cPath & 4)
                 cPath += 4;
-            var pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
+            let pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
 
-            var convertedPath = [];
+            let convertedPath = [];
             convertedPaths.push(convertedPath);
-            for (var j = 0; j < pathSize; ++j)
+            for (let j = 0; j < pathSize; ++j)
                 convertedPath.push({
                     X: pathArray[j * 2],
                     Y: pathArray[j * 2 + 1]
@@ -257,29 +257,29 @@ jscut.priv.path = jscut.priv.path || {};
     // Convert C format paths to array of CamPath. double**& cPathsRef, int& cNumPathsRef, int*& cPathSizesRef
     // This version assume each point has X, Y, Z (stride = 3).
     jscut.priv.path.convertPathsFromCppToCamPath = function (memoryBlocks, cPathsRef, cNumPathsRef, cPathSizesRef) {
-        var cPaths = Module.HEAPU32[cPathsRef >> 2];
+        let cPaths = Module.HEAPU32[cPathsRef >> 2];
         memoryBlocks.push(cPaths);
-        var cPathsBase = cPaths >> 2;
+        let cPathsBase = cPaths >> 2;
 
-        var cNumPaths = Module.HEAPU32[cNumPathsRef >> 2];
+        let cNumPaths = Module.HEAPU32[cNumPathsRef >> 2];
 
-        var cPathSizes = Module.HEAPU32[cPathSizesRef >> 2];
+        let cPathSizes = Module.HEAPU32[cPathSizesRef >> 2];
         memoryBlocks.push(cPathSizes);
-        var cPathSizesBase = cPathSizes >> 2;
+        let cPathSizesBase = cPathSizes >> 2;
 
-        var convertedPaths = [];
-        for (var i = 0; i < cNumPaths; ++i) {
-            var pathSize = Module.HEAPU32[cPathSizesBase + i];
-            var cPath = Module.HEAPU32[cPathsBase + i];
+        let convertedPaths = [];
+        for (let i = 0; i < cNumPaths; ++i) {
+            let pathSize = Module.HEAPU32[cPathSizesBase + i];
+            let cPath = Module.HEAPU32[cPathsBase + i];
             // cPath contains value to pass to Module._free(). The aligned version contains the actual data.
             memoryBlocks.push(cPath);
             if (cPath & 4)
                 cPath += 4;
-            var pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
+            let pathArray = new Float64Array(Module.HEAPU32.buffer, Module.HEAPU32.byteOffset + cPath);
 
-            var convertedPath = [];
+            let convertedPath = [];
             convertedPaths.push({ path: convertedPath, safeToClose: false });
-            for (var j = 0; j < pathSize; ++j)
+            for (let j = 0; j < pathSize; ++j)
                 convertedPath.push({
                     X: pathArray[j * 3],
                     Y: pathArray[j * 3 + 1],
@@ -299,10 +299,10 @@ jscut.priv.path = jscut.priv.path || {};
 
     // Clip Clipper geometry. clipType is a ClipperLib.ClipType constant. Returns new geometry.
     jscut.priv.path.clip = function (paths1, paths2, clipType) {
-        var clipper = new ClipperLib.Clipper();
+        let clipper = new ClipperLib.Clipper();
         clipper.AddPaths(paths1, ClipperLib.PolyType.ptSubject, true);
         clipper.AddPaths(paths2, ClipperLib.PolyType.ptClip, true);
-        var result = [];
+        let result = [];
         clipper.Execute(clipType, result, ClipperLib.PolyFillType.pftEvenOdd, ClipperLib.PolyFillType.pftEvenOdd);
         return result;
     }
@@ -325,9 +325,9 @@ jscut.priv.path = jscut.priv.path || {};
         else if (joinType == ClipperLib.JoinType.jtMiter)
             joinType = ClipperLib.JoinType.jtSquare;
 
-        var co = new ClipperLib.ClipperOffset(2, jscut.priv.path.arcTolerance);
+        let co = new ClipperLib.ClipperOffset(2, jscut.priv.path.arcTolerance);
         co.AddPaths(paths, joinType, endType);
-        var offsetted = [];
+        let offsetted = [];
         co.Execute(offsetted, amount);
         //offsetted = ClipperLib.Clipper.CleanPolygons(offsetted, jscut.priv.path.cleanPolyDist);
         return offsetted;

@@ -17,7 +17,7 @@
 
 function MaterialViewModel() {
     "use strict";
-    var self = this;
+    let self = this;
     self.matUnits = ko.observable("inch");
     self.unitConverter = new UnitConverter(self.matUnits);
     self.matThickness = ko.observable("1.0");

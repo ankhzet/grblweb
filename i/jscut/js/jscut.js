@@ -16,7 +16,7 @@
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
 function MiscViewModel() {
-    var self = this;
+    let self = this;
     self.enableGoogleDrive = ko.observable(options.enableGoogleDrive);
     self.enableDropbox = ko.observable(options.enableDropbox);
     self.debug = ko.observable(options.debug);
@@ -33,28 +33,28 @@ function MiscViewModel() {
     self.camCppError = ko.observable("");
 }
 
-var mainSvg = Snap("#MainSvg");
-var materialSvg = Snap("#MaterialSvg");
-var contentGroup = mainSvg.group();
+let mainSvg = Snap("#MainSvg");
+let materialSvg = Snap("#MaterialSvg");
+let contentGroup = mainSvg.group();
 contentGroup.attr("filter", mainSvg.filter(Snap.filter.contrast(.5)).attr("filterUnits", "objectBoundingBox"));
-var combinedGeometryGroup = mainSvg.g();
-var tabsGroup = mainSvg.g();
-var toolPathsGroup = mainSvg.g();
-var selectionGroup = mainSvg.g();
-var renderPath;
+let combinedGeometryGroup = mainSvg.g();
+let tabsGroup = mainSvg.g();
+let toolPathsGroup = mainSvg.g();
+let selectionGroup = mainSvg.g();
+let renderPath;
 
-var svgViewModel;
-var materialViewModel;
-var selectionViewModel;
-var toolModel;
-var operationsViewModel;
-var tabsViewModel;
-var gcodeConversionViewModel;
-var miscViewModel;
+let svgViewModel;
+let materialViewModel;
+let selectionViewModel;
+let toolModel;
+let operationsViewModel;
+let tabsViewModel;
+let gcodeConversionViewModel;
+let miscViewModel;
 
 function loadScript(path, loadedCallback, errorCallback) {
-    var done = false;
-    var script = document.createElement('script');
+    let done = false;
+    let script = document.createElement('script');
 
     function handleLoad() {
         if (!done) {
@@ -64,7 +64,7 @@ function loadScript(path, loadedCallback, errorCallback) {
     }
 
     function handleReadyStateChange() {
-        var state;
+        let state;
 
         if (!done) {
             done = true;
@@ -89,21 +89,21 @@ function loadScript(path, loadedCallback, errorCallback) {
     document.body.appendChild(script);
 }
 
-var downloadCppStarted = false;
-var triedPaths = [];
+let downloadCppStarted = false;
+let triedPaths = [];
 function downloadCpp() {
     downloadCppStarted = true;
     if (options.camCppPaths.length == 0) {
         console.log('Error: nothing left to try; cam-cpp is unavailable.\n');
-        var e = "cam-cpp.js is unavailable; tried the following paths:<ul>";
-        for (var i = 0; i < triedPaths.length; ++i)
+        let e = "cam-cpp.js is unavailable; tried the following paths:<ul>";
+        for (let i = 0; i < triedPaths.length; ++i)
             e += "<li>" + triedPaths[i] + "</li>";
         e += "</ul>"
         miscViewModel.camCppError(e);
         return;
     }
-    var nextLocation = options.camCppPaths.shift();
-    var script = nextLocation + "/cam-cpp.js";
+    let nextLocation = options.camCppPaths.shift();
+    let script = nextLocation + "/cam-cpp.js";
     triedPaths.push(script);
 
     loadScript(
@@ -195,12 +195,12 @@ $(function () {
     renderPath = startRenderPath(options, $("#renderPathCanvas")[0], $('#timeSlider'), 'js', function () { });
 });
 
-var nextAlertNum = 1;
+let nextAlertNum = 1;
 function showAlert(message, alerttype, haveTimeout) {
     haveTimeout = (typeof haveTimeout === "undefined") ? true : false;
-    var alertNum = nextAlertNum++;
+    let alertNum = nextAlertNum++;
     $('#alert_placeholder').prepend('<div id="AlertNum' + alertNum + '" class="alert ' + alerttype + '"><a class="close" data-dismiss="alert">&times;</a>' + message + '</div>')
-    var result = $("#AlertNum" + alertNum);
+    let result = $("#AlertNum" + alertNum);
     if (haveTimeout)
         setTimeout(function () {
             result.remove();
@@ -213,8 +213,8 @@ Snap.load("Material.svg", function (f) {
     materialViewModel.materialSvg(materialSvg);
 });
 
-var tutorialAlert = null;
-var nextTutorialStep = 0;
+let tutorialAlert = null;
+let nextTutorialStep = 0;
 function tutorial(step, message) {
     if (step >= nextTutorialStep) {
         if (tutorialAlert != null)
@@ -237,11 +237,11 @@ function loadSvg(alert, filename, content) {
 }
 
 $(document).on('change', '#choose-svg-file', function (event) {
-    var files = event.target.files;
-    for (var i = 0, file; file = files[i]; ++i) {
+    let files = event.target.files;
+    for (let i = 0, file; file = files[i]; ++i) {
         (function (file) {
-            var alert = showAlert("loading " + file.name, "alert-info", false);
-            var reader = new FileReader();
+            let alert = showAlert("loading " + file.name, "alert-info", false);
+            let reader = new FileReader();
             reader.onload = function (e) {
                 loadSvg(alert, file.name, e.target.result);
             };
@@ -262,7 +262,7 @@ $(document).on('change', '#choose-svg-file', function (event) {
 function openSvgDropbox() {
     Dropbox.choose({
         success: function (files) {
-            var alert = showAlert("loading " + files[0].name, "alert-info", false);
+            let alert = showAlert("loading " + files[0].name, "alert-info", false);
             $.get(files[0].link, function (content) {
                 loadSvg(alert, files[0].name, content);
             }, "text").fail(function () {
@@ -275,7 +275,7 @@ function openSvgDropbox() {
 }
 
 $("#MainSvg").click(function (e) {
-    var element = Snap.getElementByPoint(e.pageX, e.pageY);
+    let element = Snap.getElementByPoint(e.pageX, e.pageY);
     if (element != null) {
         operationsViewModel.clickOnSvg(element) || tabsViewModel.clickOnSvg(element) || selectionViewModel.clickOnSvg(element);
         if (selectionViewModel.selNumSelected() > 0) {
@@ -291,8 +291,8 @@ function makeAllSameUnit(val) {
     toolModel.units(val);
     gcodeConversionViewModel.units(val);
 
-    var ops = operationsViewModel.operations();
-    for (var i = 0; i < ops.length; ++i)
+    let ops = operationsViewModel.operations();
+    for (let i = 0; i < ops.length; ++i)
         ops[i].units(val);
 }
 
@@ -335,7 +335,7 @@ popoverHover('#gcodeMaxX', "top", "Maximum X coordinate in gcode. If this is out
 popoverHover('#gcodeMinY', "top", "Minimum Y coordinate in gcode. If this is out of range of your machine then adjust Y Offset.");
 popoverHover('#gcodeMaxY', "top", "Maximum Y coordinate in gcode. If this is out of range of your machine then adjust Y Offset.");
 
-var operationPopovers = {
+let operationPopovers = {
     opEnabled: ['top', 'Whether this operation is enabled'],
     opOperation: ['top', 'What operation type to perform'],
     opGenerate: ['top', 'Generate toolpath for operation'],
@@ -350,15 +350,15 @@ var operationPopovers = {
     opWidth: ['right', 'How wide a path to cut. If this is less than the cutter width then it uses the cutter width.'],
 }
 
-var tabPopovers = {
+let tabPopovers = {
     tabEnabled: ['top', 'Whether this tab is enabled'],
     tabMargin: ['top', 'Positive: how much to expand tab.<br><br>Negative: how much to shrink tab.'],
 }
 
 function hookupOperationPopovers(nodes) {
     "use strict";
-    for (var i = 0; i < nodes.length; ++i) {
-        var node = nodes[i];
+    for (let i = 0; i < nodes.length; ++i) {
+        let node = nodes[i];
         hookupOperationPopovers(node.childNodes);
         if (node.id in operationPopovers)
             popoverHover(node, operationPopovers[node.id][0], operationPopovers[node.id][1]);
@@ -367,8 +367,8 @@ function hookupOperationPopovers(nodes) {
 
 function hookupTabPopovers(nodes) {
     "use strict";
-    for (var i = 0; i < nodes.length; ++i) {
-        var node = nodes[i];
+    for (let i = 0; i < nodes.length; ++i) {
+        let node = nodes[i];
         hookupTabPopovers(node.childNodes);
         if (node.id in tabPopovers)
             popoverHover(node, tabPopovers[node.id][0], tabPopovers[node.id][1]);
@@ -421,11 +421,11 @@ function showSaveSettingsModal() {
 }
 
 $(document).on('change', '#choose-settings-file', function (event) {
-    var files = event.target.files;
-    for (var i = 0, file; file = files[i]; ++i) {
+    let files = event.target.files;
+    for (let i = 0, file; file = files[i]; ++i) {
         (function (file) {
-            var alert = showAlert("loading " + file.name, "alert-info", false);
-            var reader = new FileReader();
+            let alert = showAlert("loading " + file.name, "alert-info", false);
+            let reader = new FileReader();
             reader.onload = function (e) {
                 fromJson(JSON.parse(e.target.result));
                 alert.remove();
@@ -445,11 +445,11 @@ $(document).on('change', '#choose-settings-file', function (event) {
     $(event.target).replaceWith(control = $(event.target).clone(true));
 });
 
-var googleDeveloperKey = 'AIzaSyABOorNywzgSXQ8Waffle8zAhfgkHUBw0M';
-var googleClientId = '103921723157-leb9b5b4i79euhnn96nlpeeev1m3pvg0.apps.googleusercontent.com';
-var googleAuthApiLoaded = false;
-var googlePickerApiLoaded = false;
-var googleDriveApiLoaded = false;
+let googleDeveloperKey = 'AIzaSyABOorNywzgSXQ8Waffle8zAhfgkHUBw0M';
+let googleClientId = '103921723157-leb9b5b4i79euhnn96nlpeeev1m3pvg0.apps.googleusercontent.com';
+let googleAuthApiLoaded = false;
+let googlePickerApiLoaded = false;
+let googleDriveApiLoaded = false;
 
 function onGoogleApiLoad() {
     gapi.load('auth', function () { googleAuthApiLoaded = true; });
@@ -460,7 +460,7 @@ function onGoogleClientLoad() {
     gapi.client.load('drive', 'v2', function () { googleDriveApiLoaded = true; });
 }
 
-var googleDriveReadToken;
+let googleDriveReadToken;
 function googleDriveAuthRead(callback) {
     if (!googleAuthApiLoaded)
         return;
@@ -479,7 +479,7 @@ function googleDriveAuthRead(callback) {
         });
 }
 
-var googleDriveWriteToken;
+let googleDriveWriteToken;
 function googleDriveAuthWrite(callback) {
     if (!googleAuthApiLoaded)
         return;
@@ -511,11 +511,11 @@ function openGoogle(picker, wildcard, callback) {
                 picker.picker.setDeveloperKey(googleDeveloperKey);
                 picker.picker.setCallback(function (data) {
                     if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
-                        var doc = data[google.picker.Response.DOCUMENTS][0];
-                        var name = doc[google.picker.Document.NAME];
-                        var id = doc[google.picker.Document.ID];
+                        let doc = data[google.picker.Response.DOCUMENTS][0];
+                        let name = doc[google.picker.Document.NAME];
+                        let id = doc[google.picker.Document.ID];
 
-                        var alert = showAlert("loading " + name, "alert-info", false);
+                        let alert = showAlert("loading " + name, "alert-info", false);
                         gapi.client.drive.files.get({
                             'fileId': id
                         }).execute(function (resp) {
@@ -523,7 +523,7 @@ function openGoogle(picker, wildcard, callback) {
                                 alert.remove();
                                 showAlert(resp.error.message, "alert-danger");
                             } else {
-                                var xhr = new XMLHttpRequest();
+                                let xhr = new XMLHttpRequest();
                                 xhr.open('GET', resp.downloadUrl);
                                 xhr.setRequestHeader('Authorization', 'Bearer ' + googleDriveReadToken);
                                 xhr.onload = function (content) {
@@ -558,13 +558,13 @@ function saveGoogle(filename, content, callback) {
             const delimiter = "\r\n--" + boundary + "\r\n";
             const close_delim = "\r\n--" + boundary + "--";
 
-            var contentType = 'text/plain';
-            var metadata = {
+            let contentType = 'text/plain';
+            let metadata = {
                 'title': filename,
                 'mimeType': contentType
             };
 
-            var multipartRequestBody =
+            let multipartRequestBody =
                 delimiter +
                 'Content-Type: application/json\r\n\r\n' +
                 JSON.stringify(metadata) +
@@ -574,7 +574,7 @@ function saveGoogle(filename, content, callback) {
                 content +
                 close_delim;
 
-            var request = gapi.client.request({
+            let request = gapi.client.request({
                 'path': '/upload/drive/v2/files',
                 'method': 'POST',
                 'params': { 'uploadType': 'multipart' },
@@ -584,7 +584,7 @@ function saveGoogle(filename, content, callback) {
                 'body': multipartRequestBody
             });
 
-            var alert = showAlert("saving " + filename, "alert-info", false);
+            let alert = showAlert("saving " + filename, "alert-info", false);
             request.execute(function (result) {
                 if (result.error) {
                     alert.remove();
@@ -599,7 +599,7 @@ function saveGoogle(filename, content, callback) {
     });
 } // saveGoogle()
 
-var googleOpenSvgPicker = {};
+let googleOpenSvgPicker = {};
 function openSvgGoogle() {
     openGoogle(googleOpenSvgPicker, '*.svg', loadSvg);
 }
@@ -612,7 +612,7 @@ function saveGcodeGoogle(callback) {
     saveGoogle(gcodeConversionViewModel.gcodeFilename(), gcodeConversionViewModel.gcode(), callback);
 }
 
-var googleOpenSettingsPicker = {};
+let googleOpenSettingsPicker = {};
 function loadSettingsGoogle() {
     openGoogle(googleOpenSettingsPicker, '*.jscut', function (alert, filename, content) {
         fromJson(JSON.parse(content));
@@ -630,7 +630,7 @@ function saveSettingsGoogle(callback) {
 function showLoadSettingsFromLocalStorageModal() {
     "use strict";
 
-    var settings = localStorage.getItem("settings");
+    let settings = localStorage.getItem("settings");
     if (settings == null) {
       showAlert("No settings stored locally yet.", "alert-danger");
     }
@@ -640,16 +640,16 @@ function showLoadSettingsFromLocalStorageModal() {
 }
 
 function loadSettingsLocalStorage() {
-    var alert = showAlert("Loading settings from browser local storage", "alert-info", false);
+    let alert = showAlert("Loading settings from browser local storage", "alert-info", false);
     console.log("loadSettingsLocalStorage");
-    var settings = JSON.parse(localStorage.getItem("settings"));
+    let settings = JSON.parse(localStorage.getItem("settings"));
     fromJson(settings[miscViewModel.loadLocalStorageFilename()]);
     $('#load-local-storage-settings-modal').modal('hide');
     alert.remove();
 }
 
 function deleteSettingsLocalStorage() {
-    var settings = JSON.parse(localStorage.getItem("settings"));
+    let settings = JSON.parse(localStorage.getItem("settings"));
     delete settings[miscViewModel.loadLocalStorageFilename()];
     localStorage.setItem("settings", JSON.stringify(settings));
     $('#delete-local-storage-settings-modal').modal('hide');
@@ -657,8 +657,8 @@ function deleteSettingsLocalStorage() {
 }
 
 function saveSettingsLocalStorage(callback) {
-    var alert = showAlert("Saving settings into browser local storage", "alert-info", false);
-    var settings = JSON.parse(localStorage.getItem("settings"));
+    let alert = showAlert("Saving settings into browser local storage", "alert-info", false);
+    let settings = JSON.parse(localStorage.getItem("settings"));
     if (settings == null) {
       settings = {};
     }
@@ -675,23 +675,23 @@ function saveGcodeLocalFile(callback) {
         showAlert('Click "Generate Gcode" first', "alert-danger");
         return;
     }
-    var blob = new Blob([gcodeConversionViewModel.gcode()], {type: 'text/plain'});
+    let blob = new Blob([gcodeConversionViewModel.gcode()], {type: 'text/plain'});
     saveAs(blob, gcodeConversionViewModel.gcodeFilename());
     callback();
 }
 
 function saveSettingsLocalFile(callback) {
-    var blob = new Blob([JSON.stringify(toJson())], {type: 'text/json'});
+    let blob = new Blob([JSON.stringify(toJson())], {type: 'text/json'});
     saveAs(blob, miscViewModel.saveSettingsFilename());
     callback();
 }
 
 function saveSettingsGist() {
-    var alert = showAlert("Saving Anonymous Gist", "alert-info", false);
-    var files = { "settings.jscut": { "content": JSON.stringify(toJson()) } };
+    let alert = showAlert("Saving Anonymous Gist", "alert-info", false);
+    let files = { "settings.jscut": { "content": JSON.stringify(toJson()) } };
 
-    var svgs = contentGroup.node.childNodes;
-    for (var i = 0; i < svgs.length; ++i)
+    let svgs = contentGroup.node.childNodes;
+    for (let i = 0; i < svgs.length; ++i)
         if (svgs[i].nodeName == 'svg')
             files['svg' + i + '.svg'] = { "content": new XMLSerializer().serializeToString(svgs[i]) };
 
@@ -721,12 +721,12 @@ function saveSettingsGist() {
 }
 
 function loadGist(gist) {
-    var url = 'https://api.github.com/gists/' + gist;
-    var alert = showAlert("loading " + url, "alert-info", false);
+    let url = 'https://api.github.com/gists/' + gist;
+    let alert = showAlert("loading " + url, "alert-info", false);
     $.get(url, function (content) {
-        var jscutFiles = [], svgFiles = [], otherFiles = [];
+        let jscutFiles = [], svgFiles = [], otherFiles = [];
         alert.remove();
-        for (var filename in content.files) {
+        for (let filename in content.files) {
             if (filename.indexOf('.jscut', filename.length - 6) !== -1)
                 jscutFiles.push(filename);
             else if (filename.indexOf('.svg', filename.length - 4) !== -1)
@@ -747,7 +747,7 @@ function loadGist(gist) {
         } else if (jscutFiles.length > 1)
             showAlert("Multiple .jscut files found; ignoring them", "alert-danger");
 
-        for (var i = 0; i < svgFiles.length; ++i)
+        for (let i = 0; i < svgFiles.length; ++i)
             loadSvg(null, svgFiles[i], content.files[svgFiles[i]].content);
 
         if (jscutFiles.length == 1) {
@@ -765,9 +765,9 @@ function loadGist(gist) {
     });
 }
 
-var searchArgs = window.location.search.substr(1).split('&');
-for (var i = 0; i < searchArgs.length; ++i) {
-    var arg = searchArgs[0];
+let searchArgs = window.location.search.substr(1).split('&');
+for (let i = 0; i < searchArgs.length; ++i) {
+    let arg = searchArgs[0];
     if (arg.substr(0, 5) == 'gist=')
         loadGist(arg.substr(5));
 }
@@ -791,9 +791,9 @@ function chiliGetUser(callback) {
 }
 
 function chiliSaveGcode() {
-    var key = 'org-jscut-gcode-' + gcodeConversionViewModel.gcodeFilename();
+    let key = 'org-jscut-gcode-' + gcodeConversionViewModel.gcodeFilename();
     chiliGetUser(function (userId) {
-        var alert = showAlert("Sending gcode to chilipeppr.com", "alert-info", false);
+        let alert = showAlert("Sending gcode to chilipeppr.com", "alert-info", false);
         $.ajax({
             url: "http://www.chilipeppr.com/dataput",
             type: "POST",
@@ -824,12 +824,12 @@ function chiliSaveGcode() {
 }
 
 if (typeof options.preloadInBrowser == 'string' && options.preloadInBrowser.length > 0) {
-    var settings = JSON.parse(localStorage.getItem("settings"));
+    let settings = JSON.parse(localStorage.getItem("settings"));
     fromJson(settings[options.preloadInBrowser]);
 }
 
 function grblWebSaveGcode() {
-    var alert = showAlert("Sending gcode to GRBLweb", "alert-info", false);
+    let alert = showAlert("Sending gcode to GRBLweb", "alert-info", false);
     $.ajax({
         url: "/api/uploadGcode",
         type: "POST",

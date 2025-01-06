@@ -17,18 +17,18 @@
 
 function UnitConverter(units) {
     "use strict";
-    var self = this;
+    let self = this;
     self.unitsObservables = [];
 
     units.subscribe(function (newValue) {
         if (newValue == "inch")
-            for (var i = 0; i < self.unitsObservables.length ; ++i) {
-                var o = self.unitsObservables[i];
+            for (let i = 0; i < self.unitsObservables.length ; ++i) {
+                let o = self.unitsObservables[i];
                 o(o() / 25.4);
             }
         else
-            for (var i = 0; i < self.unitsObservables.length ; ++i) {
-                var o = self.unitsObservables[i];
+            for (let i = 0; i < self.unitsObservables.length ; ++i) {
+                let o = self.unitsObservables[i];
                 o(o() * 25.4);
             }
     });

@@ -4,7 +4,7 @@ function createObjectFromGCode(gcode) {
     //    http://en.wikipedia.org/wiki/G-code
     //    SprintRun source code
 
-    var lastLine = {
+    let lastLine = {
         x: 0,
         y: 0,
         z: 0,
@@ -14,9 +14,9 @@ function createObjectFromGCode(gcode) {
         extruding: true
     };
 
-    var layers = [];
-    var layer = undefined;
-    var bbbox = {
+    let layers = [];
+    let layer = undefined;
+    let bbbox = {
         min: {
             x: 100000,
             y: 100000,
@@ -41,9 +41,9 @@ function createObjectFromGCode(gcode) {
     function getLineGroup(line) {
         if (layer == undefined)
             newLayer(line);
-        var speed = Math.round(line.e / 1000);
-        var grouptype = (line.extruding ? 10000 : 0) + speed;
-        var color = new THREE.Color(line.extruding ? 0x33aadd : 0x228B22);
+        let speed = Math.round(line.e / 1000);
+        let grouptype = (line.extruding ? 10000 : 0) + speed;
+        let color = new THREE.Color(line.extruding ? 0x33aadd : 0x228B22);
         if (layer.type[grouptype] == undefined) {
             layer.type[grouptype] = {
                 type: grouptype,
@@ -64,8 +64,8 @@ function createObjectFromGCode(gcode) {
     }
 
     function addSegment(p1, p2) {
-        var group = getLineGroup(p2);
-        var geometry = group.geometry;
+        let group = getLineGroup(p2);
+        let geometry = group.geometry;
 
         group.segmentCount++;
         geometry.vertices.push(new THREE.Vector3(p1.x, p1.y, p1.z));
@@ -82,7 +82,7 @@ function createObjectFromGCode(gcode) {
             bbbox.max.z = Math.max(bbbox.max.z, p2.z);
         //}
     }
-    var relative = false;
+    let relative = false;
 
     function delta(v1, v2) {
         return relative ? v2 : v2 - v1;
@@ -92,7 +92,7 @@ function createObjectFromGCode(gcode) {
         return relative ? v1 + v2 : v2;
     }
 
-    var parser = new GCodeParser({
+    let parser = new GCodeParser({
         G1: function(args, line) {
             // Example: G1 Z1.0 F3000
             //          G1 X99.9948 Y80.0611 Z15.0 F1500.0 E981.64869
@@ -102,7 +102,7 @@ function createObjectFromGCode(gcode) {
             // happens from the current extruded length to a length of
             // 22.4 mm.
 
-            var newLine = {
+            let newLine = {
                 x: args.x !== undefined ? absolute(lastLine.x, args.x) : lastLine.x,
                 y: args.y !== undefined ? absolute(lastLine.y, args.y) : lastLine.y,
                 z: args.z !== undefined ? absolute(lastLine.z, args.z) : lastLine.z,
@@ -171,7 +171,7 @@ function createObjectFromGCode(gcode) {
             // No physical motion will occur.
 
             // TODO: Only support E0
-            var newLine = lastLine;
+            let newLine = lastLine;
             newLine.x = args.x !== undefined ? args.x : newLine.x;
             newLine.y = args.y !== undefined ? args.y : newLine.y;
             newLine.z = args.z !== undefined ? args.z : newLine.z;
@@ -207,13 +207,13 @@ function createObjectFromGCode(gcode) {
 
     //console.log("Layer Count ", layers.length);
 
-    var object = new THREE.Object3D();
+    let object = new THREE.Object3D();
 
-    for (var lid in layers) {
-        var layer = layers[lid];
+    for (let lid in layers) {
+        let layer = layers[lid];
         //console.log("Layer ", layer);
-        for (var tid in layer.type) {
-            var type = layer.type[tid];
+        for (let tid in layer.type) {
+            let type = layer.type[tid];
             //console.log("Layer ", layer.layer, " type ", type.type, " seg ", type.segmentCount);
             object.add(new THREE.Line(type.geometry, type.material));
         }
@@ -221,9 +221,9 @@ function createObjectFromGCode(gcode) {
     //console.log("bbox ", bbbox);
 
     // show dimensions in console
-    var dX = bbbox.max.x-bbbox.min.x;
-    var dY = bbbox.max.y-bbbox.min.y;
-    var dZ = bbbox.max.z-bbbox.min.z;
+    let dX = bbbox.max.x-bbbox.min.x;
+    let dY = bbbox.max.y-bbbox.min.y;
+    let dZ = bbbox.max.z-bbbox.min.z;
 
     $('#console').append('\n<span style="color: red;">--------------New Gcode Loaded--------------</span>\n');
     $('#console').append('<span style="color: red;">Min Dimensions X: '+bbbox.min.x+' Y: '+bbbox.min.y+' Z: '+bbbox.min.z+'</span>\n');
@@ -232,9 +232,9 @@ function createObjectFromGCode(gcode) {
     $('#console').scrollTop($("#console")[0].scrollHeight - $("#console").height());
 
     // take max X and Y and scale them to fit in #renderArea
-    var scaleX = $('#renderArea').width()/dX;
-    var scaleY = $('#renderArea').height()/dY;
-    var scale = 1;
+    let scaleX = $('#renderArea').width()/dX;
+    let scaleY = $('#renderArea').height()/dY;
+    let scale = 1;
 
     if (scaleX < 1 && scaleY < 1) {
 	// both less than 1, take smaller
@@ -259,7 +259,7 @@ function createObjectFromGCode(gcode) {
 
     //console.log(scale, scaleX, scaleY);
 
-    var center = new THREE.Vector3(
+    let center = new THREE.Vector3(
         bbbox.min.x + ((bbbox.max.x - bbbox.min.x) / 2),
         bbbox.min.y + ((bbbox.max.y - bbbox.min.y) / 2),
         bbbox.min.z + ((bbbox.max.z - bbbox.min.z) / 2));

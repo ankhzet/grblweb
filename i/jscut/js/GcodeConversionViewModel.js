@@ -17,8 +17,8 @@
 
 function GcodeConversionViewModel(options, miscViewModel, materialViewModel, toolModel, operationsViewModel, tabsViewModel) {
     "use strict";
-    var self = this;
-    var allowGen = true;
+    let self = this;
+    let allowGen = true;
     self.miscViewModel = miscViewModel;
     self.units = ko.observable("mm");
     self.unitConverter = new UnitConverter(self.units);
@@ -64,13 +64,14 @@ function GcodeConversionViewModel(options, miscViewModel, materialViewModel, too
         if (!allowGen)
             return;
 
-        var startTime = Date.now();
+        let startTime = Date.now();
         if (options.profile)
             console.log("generateGcode...");
 
-        var ops = [];
-        for (var i = 0; i < operationsViewModel.operations().length; ++i) {
-            op = operationsViewModel.operations()[i];
+        let ops = [];
+        for (let i = 0; i < operationsViewModel.operations().length; ++i) {
+            const op = operationsViewModel.operations()[i];
+
             if (op.enabled()) {
                 if (op.toolPaths() != null && op.toolPaths().length > 0)
                     ops.push(op);
@@ -79,37 +80,37 @@ function GcodeConversionViewModel(options, miscViewModel, materialViewModel, too
         if (ops.length == 0)
             return;
 
-        var safeZ = self.unitConverter.fromInch(materialViewModel.matZSafeMove.toInch());
-        var rapidRate = self.unitConverter.fromInch(toolModel.rapidRate.toInch());
-        var plungeRate = self.unitConverter.fromInch(toolModel.plungeRate.toInch());
-        var cutRate = self.unitConverter.fromInch(toolModel.cutRate.toInch());
-        var passDepth = self.unitConverter.fromInch(toolModel.passDepth.toInch());
-        var topZ = self.unitConverter.fromInch(materialViewModel.matTopZ.toInch());
-        var tabCutDepth = self.unitConverter.fromInch(tabsViewModel.maxCutDepth.toInch());
-        var tabZ = topZ - tabCutDepth;
+        let safeZ = self.unitConverter.fromInch(materialViewModel.matZSafeMove.toInch());
+        let rapidRate = self.unitConverter.fromInch(toolModel.rapidRate.toInch());
+        let plungeRate = self.unitConverter.fromInch(toolModel.plungeRate.toInch());
+        let cutRate = self.unitConverter.fromInch(toolModel.cutRate.toInch());
+        let passDepth = self.unitConverter.fromInch(toolModel.passDepth.toInch());
+        let topZ = self.unitConverter.fromInch(materialViewModel.matTopZ.toInch());
+        let tabCutDepth = self.unitConverter.fromInch(tabsViewModel.maxCutDepth.toInch());
+        let tabZ = topZ - tabCutDepth;
 
         if(passDepth <= 0) {
             showAlert("Pass Depth is not greater than 0.", "alert-danger");
             return;
         }
 
-        var scale;
+        let scale;
         if(self.units() == "inch")
             scale = 1 / jscut.priv.path.inchToClipperScale;
         else
             scale = 25.4 / jscut.priv.path.inchToClipperScale;
 
-        var tabGeometry = [];
-        for (var i = 0; i < tabsViewModel.tabs().length; ++i) {
-            var tab = tabsViewModel.tabs()[i];
+        let tabGeometry = [];
+        for (let i = 0; i < tabsViewModel.tabs().length; ++i) {
+            let tab = tabsViewModel.tabs()[i];
             if (tab.enabled()) {
-                var offset = toolModel.diameter.toInch() / 2 * jscut.priv.path.inchToClipperScale;
-                var geometry = jscut.priv.path.offset(tab.combinedGeometry, offset);
+                let offset = toolModel.diameter.toInch() / 2 * jscut.priv.path.inchToClipperScale;
+                let geometry = jscut.priv.path.offset(tab.combinedGeometry, offset);
                 tabGeometry = jscut.priv.path.clip(tabGeometry, geometry, ClipperLib.ClipType.ctUnion);
             }
         }
 
-        var gcode = "";
+        let gcode = "";
         if (self.units() == "inch")
             gcode += "G20         ; Set units to inches\r\n";
         else
@@ -117,9 +118,9 @@ function GcodeConversionViewModel(options, miscViewModel, materialViewModel, too
         gcode += "G90         ; Absolute positioning\r\n";
         gcode += "G1 Z" + safeZ + " F" + rapidRate + "      ; Move to clearance level\r\n"
 
-        for (var opIndex = 0; opIndex < ops.length; ++opIndex) {
-            var op = ops[opIndex];
-            var cutDepth = self.unitConverter.fromInch(op.cutDepth.toInch());
+        for (let opIndex = 0; opIndex < ops.length; ++opIndex) {
+            let op = ops[opIndex];
+            let cutDepth = self.unitConverter.fromInch(op.cutDepth.toInch());
             if(cutDepth <= 0) {
                 showAlert("An operation has a cut depth which is not greater than 0.", "alert-danger");
                 return;

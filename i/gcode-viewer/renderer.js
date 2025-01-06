@@ -1,6 +1,6 @@
 function createScene(element) {
     // renderer setup
-    var renderer = new THREE.WebGLRenderer({
+    let renderer = new THREE.WebGLRenderer({
         autoClearColor: true
     });
     renderer.setClearColor(0xffffff, 1);
@@ -9,15 +9,15 @@ function createScene(element) {
     renderer.clear();
 
     // scene
-    var scene = new THREE.Scene();
+    let scene = new THREE.Scene();
 
     // lighting
-    var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    let directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
     directionalLight.position.set( 0, 1, 0 );
     scene.add( directionalLight );
 
     // camera
-    var fov = 45,
+    let fov = 45,
         aspect = element.width() / element.height(),
         near = 1,
         far = 12000,

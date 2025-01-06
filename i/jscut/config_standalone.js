@@ -2,7 +2,7 @@
 //      config.js               Used when deploying to jscut.org.
 //      config_standalone.js    This gets renamed to config.js when jscut_standalone.tar.gz is generated.
 
-var options = {
+let options = {
     // Attempt to fetch cam-cpp.js from these locations in order.
     // 'js' works in the standalone version, but not the version hosted at jscut.org
     // (the file is too big to be hosted there). 'js' also works locally if you run

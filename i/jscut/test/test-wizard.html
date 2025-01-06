@@ -110,20 +110,20 @@
             },
 
             update: function () {
-                var boxWidth = jscut.data.toInch(this.boxWidth, this.units);
-                var boxHeight = jscut.data.toInch(this.boxHeight, this.units);
-                var nutWidth = jscut.data.toInch(this.nutWidth, this.units);
-                var nutThickness = jscut.data.toInch(this.nutThickness, this.units);
-                var nutSpacing = jscut.data.toInch(this.nutSpacing, this.units);
-                var jointSize = jscut.data.toInch(this.jointSize, this.units);
-                var jointDistFromEdge = jscut.data.toInch(this.jointDistFromEdge, this.units);
-                var screwDiameter = jscut.data.toInch(this.screwDiameter, this.units);
-                var thickness = jscut.data.toInch(this.material.thickness, this.material.units);
-                var diameter = jscut.data.toInch(this.tool.diameter, this.tool.units);
+                let boxWidth = jscut.data.toInch(this.boxWidth, this.units);
+                let boxHeight = jscut.data.toInch(this.boxHeight, this.units);
+                let nutWidth = jscut.data.toInch(this.nutWidth, this.units);
+                let nutThickness = jscut.data.toInch(this.nutThickness, this.units);
+                let nutSpacing = jscut.data.toInch(this.nutSpacing, this.units);
+                let jointSize = jscut.data.toInch(this.jointSize, this.units);
+                let jointDistFromEdge = jscut.data.toInch(this.jointDistFromEdge, this.units);
+                let screwDiameter = jscut.data.toInch(this.screwDiameter, this.units);
+                let thickness = jscut.data.toInch(this.material.thickness, this.material.units);
+                let diameter = jscut.data.toInch(this.tool.diameter, this.tool.units);
 
-                var reliefRadius = diameter * 1.1 / 2;
+                let reliefRadius = diameter * 1.1 / 2;
 
-                var leftNutJoint = jscut.geometry.createRect(-diameter, -jointSize / 2, thickness, jointSize / 2, "inch");
+                let leftNutJoint = jscut.geometry.createRect(-diameter, -jointSize / 2, thickness, jointSize / 2, "inch");
                 leftNutJoint = jscut.geometry.union(leftNutJoint, jscut.geometry.createRect(
                     thickness - reliefRadius * 2, -jointSize / 2 - reliefRadius,
                     thickness, jointSize / 2 + reliefRadius, "inch"));
@@ -133,13 +133,13 @@
                 leftNutJoint = jscut.geometry.union(leftNutJoint, jscut.geometry.createRect(
                     0, -screwDiameter / 2,
                     thickness + nutSpacing + nutThickness, screwDiameter / 2, "inch"));
-                var bottomNutJoint = jscut.geometry.rotate(leftNutJoint, 90, "deg");
-                var rightNutJoint = jscut.geometry.rotate(leftNutJoint, 180, "deg");
-                var topNutJoint = jscut.geometry.rotate(leftNutJoint, 270, "deg");
+                let bottomNutJoint = jscut.geometry.rotate(leftNutJoint, 90, "deg");
+                let rightNutJoint = jscut.geometry.rotate(leftNutJoint, 180, "deg");
+                let topNutJoint = jscut.geometry.rotate(leftNutJoint, 270, "deg");
 
-                var jointOffset = jointSize / 2 + jointDistFromEdge;
+                let jointOffset = jointSize / 2 + jointDistFromEdge;
 
-                var panel = jscut.geometry.createRect(0, 0, boxWidth, boxHeight, "inch");
+                let panel = jscut.geometry.createRect(0, 0, boxWidth, boxHeight, "inch");
                 panel = jscut.geometry.difference(panel, jscut.geometry.translate(leftNutJoint, 0, jointOffset, "inch"));
                 panel = jscut.geometry.difference(panel, jscut.geometry.translate(leftNutJoint, 0, boxHeight - jointOffset, "inch"));
                 panel = jscut.geometry.difference(panel, jscut.geometry.translate(bottomNutJoint, jointOffset, 0, "inch"));
@@ -160,11 +160,11 @@
             },
 
             generate: function () {
-                var camPaths = jscut.cam.getCamPaths(this.operation, this.tool);
+                let camPaths = jscut.cam.getCamPaths(this.operation, this.tool);
                 jscut.svg.addCamPathsToSvg(this.$.svg, camPaths, 90, { fill: 'none', stroke: 'red' });
 
-                var gcodeOptions = {units: this.units};
-                var gcode = jscut.cam.getGcodeHeader(this.tool, this.material, gcodeOptions);
+                let gcodeOptions = {units: this.units};
+                let gcode = jscut.cam.getGcodeHeader(this.tool, this.material, gcodeOptions);
                 gcode += jscut.cam.getOperationGcode(0, this.operation, this.tool, this.material, gcodeOptions, camPaths);
 
                 this.simulateCutterDiameter = jscut.data.fromInch(jscut.data.toInch(this.tool.diameter, this.tool.units), this.units);

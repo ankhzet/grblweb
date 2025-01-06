@@ -17,7 +17,7 @@
 
 function SelectionViewModel(svgViewModel, materialViewModel, selectionGroup) {
     "use strict";
-    var self = this;
+    let self = this;
 
     self.selMinNumSegments = ko.observable("1");
     self.selMinSegmentLength = ko.observable("0.01");
@@ -32,12 +32,12 @@ function SelectionViewModel(svgViewModel, materialViewModel, selectionGroup) {
             return true;
         }
 
-        var path = jscut.priv.path.getLinearSnapPathFromElement(elem, self.selMinNumSegments(), self.selMinSegmentLength.toInch() * svgViewModel.pxPerInch(), function (msg) {
+        let path = jscut.priv.path.getLinearSnapPathFromElement(elem, self.selMinNumSegments(), self.selMinSegmentLength.toInch() * svgViewModel.pxPerInch(), function (msg) {
             showAlert(msg, "alert-warning");
         });
 
         if (path != null) {
-            var newPath = selectionGroup.path(path);
+            let newPath = selectionGroup.path(path);
             newPath.attr("class", "selectedPath");
             if (elem.attr("fill-rule") == "evenodd")
                 newPath.attr("fill-rule", "evenodd");

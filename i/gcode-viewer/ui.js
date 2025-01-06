@@ -1,6 +1,6 @@
-var scene = null;
-var object = null;
-var added = false;
+let scene = null;
+let object = null;
+let added = false;
 
 $(function() {
     scene = createScene($('#renderArea'));
@@ -16,7 +16,7 @@ function createObject(gcode) {
 }
 
 function openGCodeFromText() {
-    var gcode = $('#command').val();
+    let gcode = $('#command').val();
     if (document.hasFocus()) {
 	createObject(gcode);
         //console.log('adding object with existing focus');
@@ -32,7 +32,7 @@ function openGCodeFromText() {
     }
 }
 
-var three_dispose_object_3d = function(object) {
+let three_dispose_object_3d = function(object) {
 
 	object.traverse(obj => {
 

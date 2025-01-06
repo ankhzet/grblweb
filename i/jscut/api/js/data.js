@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with jscut.  If not, see <http://www.gnu.org/licenses/>.
 
-var jscut = jscut || {};
+let jscut = jscut || {};
 jscut.data = jscut.data || {};
 
 (function () {
@@ -50,7 +50,7 @@ jscut.data = jscut.data || {};
         else if (typeof json === 'string')
             json = JSON.parse(json);
 
-        var result = {
+        let result = {
             units: "inch",
             thickness: "1.0",
             zOrigin: "Top",
@@ -58,7 +58,7 @@ jscut.data = jscut.data || {};
         }
 
         function fetch(name) {
-            var v = json[name];
+            let v = json[name];
             if (typeof v !== "undefined")
                 result[name] = v;
         }
@@ -84,7 +84,7 @@ jscut.data = jscut.data || {};
         else if (typeof json === 'string')
             json = JSON.parse(json);
 
-        var result = {
+        let result = {
             units: 'inch',
             diameter: .125,
             passDepth: .125,
@@ -95,7 +95,7 @@ jscut.data = jscut.data || {};
         }
 
         function fetch(name) {
-            var v = json[name];
+            let v = json[name];
             if (typeof v !== "undefined")
                 result[name] = v;
         }
@@ -130,7 +130,7 @@ jscut.data = jscut.data || {};
         else if (typeof json === 'string')
             json = JSON.parse(json);
 
-        var result = {
+        let result = {
             name: "",
             units: "inch",
             //enabled: true,
@@ -145,7 +145,7 @@ jscut.data = jscut.data || {};
         }
 
         function fetch(name) {
-            var v = json[name];
+            let v = json[name];
             if (typeof v !== "undefined")
                 result[name] = v;
         }
@@ -182,7 +182,7 @@ jscut.data = jscut.data || {};
         else if (typeof json === 'string')
             json = JSON.parse(json);
 
-        var result = {
+        let result = {
             units: "mm",
             //gcodeFilename: "gcode.gcode",
             offsetX: 0,
@@ -190,7 +190,7 @@ jscut.data = jscut.data || {};
         }
 
         function fetch(name) {
-            var v = json[name];
+            let v = json[name];
             if (typeof v !== "undefined")
                 result[name] = v;
         }
